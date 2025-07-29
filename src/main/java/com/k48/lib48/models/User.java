@@ -23,14 +23,19 @@ public class User {
 	@Enumerated(EnumType.STRING)
 	private Role roleName;
 	
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "carte_abonnement", referencedColumnName = "id")
+	private CarteAbonnement carteAbonnement;
+	
 	public User() {
 	}
 	
-	public User(String name, String mail, String password, Role roleName) {
+	public User(String name, String mail, String password, Role roleName, CarteAbonnement carteAbonnement) {
 		this.name = name;
 		this.mail = mail;
 		this.password = password;
 		this.roleName = roleName;
+		this.carteAbonnement = carteAbonnement;
 	}
 	
 	public int getId() {
@@ -67,5 +72,13 @@ public class User {
 	
 	public void setPassword(String password) {
 		this.password = password;
+	}
+	
+	public CarteAbonnement getCarteAbonnement() {
+		return carteAbonnement;
+	}
+	
+	public void setCarteAbonnement(CarteAbonnement carteAbonnement) {
+		this.carteAbonnement = carteAbonnement;
 	}
 }
