@@ -1,12 +1,17 @@
 package com.k48.lib48.controller;
 
+import com.k48.lib48.dto.CategoryRequestDTO;
 import com.k48.lib48.models.Category;
 import com.k48.lib48.service.CategoryServices;
+import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+
+import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/categories")
@@ -17,39 +22,64 @@ public class CategoryController {
         this.categoryServ = categoryServ;
     }
 
-    @GetMapping("/get/All")
+    @GetMapping(path = "/get/All", produces= APPLICATION_JSON_VALUE)
     public List<Category> getAllCategories() {
         return categoryServ.getAllCategories();
     }
 
-    @GetMapping("/get/ById/{id}")
+    @GetMapping(path = "/get/ById/{id}", produces= APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> getCategoryId(@PathVariable long id) {
-        Category category = categoryServ.getCategoryById(id);
-        return ResponseEntity.ok(category);
+        try {
+            Category category = categoryServ.getCategoryById(id);
+            return ResponseEntity.ok(category);
+        }catch (NoSuchElementException e){
+            throw new NoSuchElementException(e.getMessage());
+        }
     }
 
-    @GetMapping("/get/ByName")
+    @GetMapping(path = "/get/ByName", produces= APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> getCategoryByName(@RequestParam String name) {
-        Category category = categoryServ.getCategoryByName(name);
-        return ResponseEntity.ok(category);
+        try {
+            Category category = categoryServ.getCategoryByName(name);
+            return ResponseEntity.ok(category);
+        }catch (NoSuchElementException e){
+            throw new NoSuchElementException(e.getMessage());
+        }
     }
 
-    @PostMapping
-    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
-        Category created = categoryServ.createCategory(category);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+    @PostMapping(path = "/create", consumes = APPLICATION_JSON_VALUE)
+    public ResponseEntity<Category> createCategory(@RequestBody CategoryRequestDTO categoryRequestDTO) {
+        try {
+            
+            Category created = categoryServ.createCategory(categoryRequestDTO);
+            
+            return new ResponseEntity<>(created, HttpStatus.CREATED);
+        }catch (IllegalArgumentException e){
+            throw new IllegalArgumentException(e.getMessage());
+        }catch (Exception e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
-    @PutMapping
-    public ResponseEntity<Category> updateCategory(@RequestBody Category category) {
-        Category updated = categoryServ.updateCategory(category);
-        return ResponseEntity.ok(updated);
+    @PutMapping(path = "/{id}" , consumes = APPLICATION_JSON_VALUE)
+    public ResponseEntity<Category> updateCategory(@PathVariable long id,@RequestBody CategoryRequestDTO  categoryRequestDTO) {
+        try {
+            Category updated = categoryServ.updateCategory(id , categoryRequestDTO);
+            return ResponseEntity.ok(updated);
+        }catch (NoSuchElementException e){
+            throw new NoSuchElementException(e.getMessage());
+        }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping(path = "/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable long id) {
-       categoryServ.deleteCategory(id);
-       return ResponseEntity.noContent().build();
+        try {
+            categoryServ.deleteCategory(id);
+            return ResponseEntity.noContent().build();
+        }catch (NoSuchElementException e){
+            throw new NoSuchElementException(e.getMessage());
+        }
+     
     }
 
 }

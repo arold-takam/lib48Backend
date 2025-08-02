@@ -7,12 +7,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "book")
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,26 +19,36 @@ public class Book {
 
     @Column(nullable = false)
     private String titre;
-
+    
+    @Column(name = "auteur")
     private String auteur;
 
-    private String isbn;
+    @Column(name = "est_disponible", nullable = false)
+    private boolean estDisponible;
 
-    @Temporal(TemporalType.DATE)
-    private Date datePublication;
-
-    private boolean disponible;
-
+    @Column(name = "editeur")
     private String editeur;
 
+    @Column(name = "etat_livre", nullable = false)
     @Enumerated(EnumType.STRING)
     private EtatLivre etatLivre;
 
-    @JsonBackReference
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
 
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+    
+    public Book() {}
+    
+    public Book(String titre, String auteur, boolean estDisponible, String editeur, EtatLivre etatLivre, Category category) {
+        this.titre = titre;
+        this.auteur = auteur;
+        this.estDisponible = estDisponible;
+        this.editeur = editeur;
+        this.etatLivre = etatLivre;
+        this.category = category;
+    }
+    
     public Long getId() {
         return id;
     }
@@ -63,31 +72,15 @@ public class Book {
     public void setAuteur(String auteur) {
         this.auteur = auteur;
     }
-
-    public String getIsbn() {
-        return isbn;
+    
+    public boolean isEstDisponible() {
+        return estDisponible;
     }
-
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
+    
+    public void setEstDisponible(boolean estDisponible) {
+        this.estDisponible = estDisponible;
     }
-
-    public Date getDatePublication() {
-        return datePublication;
-    }
-
-    public void setDatePublication(Date datePublication) {
-        this.datePublication = datePublication;
-    }
-
-    public boolean isDisponible() {
-        return disponible;
-    }
-
-    public void setDisponible(boolean disponible) {
-        this.disponible = disponible;
-    }
-
+    
     public String getEditeur() {
         return editeur;
     }

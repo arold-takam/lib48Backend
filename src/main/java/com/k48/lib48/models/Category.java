@@ -8,20 +8,26 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Entity
-@Data @NoArgsConstructor @AllArgsConstructor
+@Table(name = "categories")
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column( nullable = false)
+    @Column( nullable = false , unique = true)
     private String nom;
 
     private String description;
-
-    @OneToMany(mappedBy = "category" , fetch = FetchType.EAGER)
-    private List<Book> books;
-
+    
+    
+    public Category(String nom, String description) {
+        this.nom = nom;
+        this.description = description;
+    }
+    
+    public Category() {}
+    
+    
     public Long getId() {
         return id;
     }
@@ -45,12 +51,5 @@ public class Category {
     public void setDescription(String description) {
         this.description = description;
     }
-
-    public List<Book> getBooks() {
-        return books;
-    }
-
-    public void setBooks(List<Book> books) {
-        this.books = books;
-    }
+    
 }

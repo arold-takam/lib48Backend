@@ -1,5 +1,7 @@
 package com.k48.lib48.controller;
 
+import com.k48.lib48.dto.BookRequestDTO;
+import com.k48.lib48.dto.BookUpDateDTO;
 import com.k48.lib48.models.Book;
 import com.k48.lib48.myEnum.EtatLivre;
 import com.k48.lib48.service.BookServices;
@@ -8,9 +10,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+
+import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @RestController
-@RequestMapping("/books")
+@RequestMapping(path = "/books")
 public class BookController {
     private BookServices bookServices;
 
@@ -19,66 +24,76 @@ public class BookController {
     }
 
     // GET BOOK ------------------------------------------
-    @GetMapping("/get/All")
+    @GetMapping(path = "/get/All" , produces = APPLICATION_JSON_VALUE)
     public List<Book> getAllBooks() {
         return bookServices.getAllBooks();
     }
 
-    @GetMapping("/get/ById/{id}")
+    @GetMapping(path = "/get/ById/{id}",produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<Book> getBookById(@PathVariable long id) {
-        Book book = bookServices.getBookId(id);
-        return ResponseEntity.ok(book);
+       try {
+           Book book = bookServices.getBookId(id);
+           return ResponseEntity.ok(book);
+       }catch (NoSuchElementException e){
+           throw  new NoSuchElementException(e.getMessage());
+       }
     }
 
-    @GetMapping("/get/ByTitle")
+    @GetMapping(path = "/get/ByTitle", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<Book> getBookByTitle(@RequestParam String title) {
-        Book book = bookServices.getBooksByTitle(title);
-        return ResponseEntity.ok(book);
+       try {
+           Book book = bookServices.getBooksByTitle(title);
+           return ResponseEntity.ok(book);
+       }catch (NoSuchElementException e){
+           throw  new NoSuchElementException(e.getMessage());
+       }
     }
+    
 
-    @GetMapping("/get/ByAuthor")
-    public ResponseEntity<List<Book>> getBookByAuteur(@RequestParam("auteur") String auteur) {
-        List <Book> books = bookServices.getBooksByAuthor(auteur);
-        return ResponseEntity.ok(books);
-    }
-
-    @GetMapping("/get/ByEditor")
-    public ResponseEntity<List<Book>> getBookByEditeur(@RequestParam String editeur) {
-        List <Book> books = bookServices.getBooksByEditeur(editeur);
-        return ResponseEntity.ok(books);
-    }
-
-    @GetMapping("/get/ByState")
-    public ResponseEntity<List<Book>> getBookByEtat(@RequestParam EtatLivre etatLivre) {
-        List<Book> books = bookServices.getBooksByEtatLivre(etatLivre);
-        return ResponseEntity.ok(books);
-    }
-
-    @GetMapping("/get/ByCategory")
+    @GetMapping(path = "/get/ByCategory", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Book>> getBookByCategorie(@RequestParam String categorie) {
-        List <Book> books = bookServices.getBooksByCategorieNom(categorie);
-        return ResponseEntity.ok(books);
+       try {
+           List <Book> books = bookServices.getBooksByCategorieNom(categorie);
+           return ResponseEntity.ok(books);
+       }catch (NoSuchElementException e){
+           throw new NoSuchElementException(e.getMessage());
+       }
     }
 
     //POST BOOK----------------------------------
-    @PostMapping
-    public ResponseEntity<Book> createBook(@RequestBody Book book) {
-        Book book1 = bookServices.createBook(book);
-        return new ResponseEntity<>(book1, HttpStatus.CREATED);
+    @PostMapping(path = ("/create") , consumes = APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> createBook(@RequestParam EtatLivre etatLivre , @RequestParam long idCategory ,@RequestBody BookRequestDTO bookRequestDTO) {
+       try {
+           bookServices.createBook(etatLivre, idCategory, bookRequestDTO);
+           
+           return new ResponseEntity<>(HttpStatus.CREATED);
+       }catch (NoSuchElementException e){
+           throw new NoSuchElementException(e.getMessage());
+       } catch (Exception e) {
+               return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+       }
     }
 
     //PUT BOOK-------------------------------------
-    @PutMapping
-    public ResponseEntity<Book> updateBook(@RequestBody Book book) {
-        Book book1 = bookServices.updateBook(book);
-        return ResponseEntity.ok(book1);
+    @PutMapping(path = ("/update/{id}"), consumes = APPLICATION_JSON_VALUE , produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<Book> updateBook(@PathVariable long id , @RequestParam EtatLivre livreEtat, @RequestParam long idCategory, @RequestBody BookUpDateDTO bookUpDateDTO) {
+      try {
+          Book book1 = bookServices.updateBook(id,livreEtat,idCategory,bookUpDateDTO);
+          return ResponseEntity.ok(book1);
+      }catch (NoSuchElementException e){
+          throw new NoSuchElementException(e.getMessage());
+      }
     }
 
     //DELETE BOOK--------------------------------
-    @DeleteMapping("/{id}")
+    @DeleteMapping(path = "/{id}")
     public ResponseEntity<Book> deleteBook(@RequestParam long id) {
-        bookServices.deleteBook(id);
-        return ResponseEntity.noContent().build();
+      try {
+          bookServices.deleteBook(id);
+          return ResponseEntity.noContent().build();
+      }catch (NoSuchElementException e){
+          throw new NoSuchElementException(e.getMessage());
+      }
     }
 
 }

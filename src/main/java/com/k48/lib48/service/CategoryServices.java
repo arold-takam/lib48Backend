@@ -1,5 +1,6 @@
 package com.k48.lib48.service;
 
+import com.k48.lib48.dto.CategoryRequestDTO;
 import com.k48.lib48.models.Category;
 import com.k48.lib48.repository.BookRespositories;
 import com.k48.lib48.repository.CategoryRepositories;
@@ -30,25 +31,33 @@ public class CategoryServices {
     }
 
     public Category getCategoryById(long categoryId) {
-        Optional<Category> category = categoryRepo.findById(categoryId);
-        if (category.isEmpty()) {
+        Optional<Category> categoryOptional = categoryRepo.findById(categoryId);
+        if (categoryOptional.isEmpty()) {
             throw new NoSuchElementException("Category not found");
-        }else {
-            return category.get();
         }
+            return categoryOptional.get();
     }
 
-    public Category createCategory(Category category) {
-        if (category.getNom() == null || category.getNom().trim().isEmpty()) {
-            throw new IllegalArgumentException("Category name cannot be null");
+    public Category createCategory(CategoryRequestDTO categoryRequestDTO) {
+        if (categoryRequestDTO == null) {
+            throw new IllegalArgumentException("This category is invalid , try again");
         }
-        return categoryRepo.save(category);
+        
+        Category existingCategory = new Category();
+        
+        existingCategory.setNom(categoryRequestDTO.nom());
+        existingCategory.setDescription(categoryRequestDTO.description());
+        
+        return categoryRepo.save(existingCategory);
     }
 
-    public Category updateCategory(Category category) {
-        Category updatedCategory = categoryRepo.findById(category.getId()).orElseThrow(() -> new NoSuchElementException("Category not found"));
-        updatedCategory.setNom(category.getNom());
-        updatedCategory.setDescription(category.getDescription());
+    public Category updateCategory(long id,CategoryRequestDTO categoryRequestDTO) {
+        
+        Category updatedCategory = categoryRepo.findById(id).orElseThrow(() -> new NoSuchElementException("Category not found"));
+        
+        updatedCategory.setNom(categoryRequestDTO.nom());
+        updatedCategory.setDescription(categoryRequestDTO.description());
+        
         return categoryRepo.save(updatedCategory);
     }
 

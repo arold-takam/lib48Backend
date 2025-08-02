@@ -16,6 +16,6 @@ public interface BookRespositories extends JpaRepository<Book, Long> {
 
     List<Book> findByEtatLivre(EtatLivre etatLivre);
 
-    List<Book> findByCategory (Category category);
+    List<Book> findAllByCategory (Category category);
 
 }
