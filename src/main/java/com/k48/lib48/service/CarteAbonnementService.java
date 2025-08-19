@@ -1,7 +1,6 @@
 package com.k48.lib48.service;
 
 
-import com.k48.lib48.dto.CarteRequestDTO;
 import com.k48.lib48.models.CarteAbonnement;
 import com.k48.lib48.models.User;
 import com.k48.lib48.myEnum.Role;
@@ -10,10 +9,9 @@ import com.k48.lib48.repository.CarteAbonnementRepository;
 import com.k48.lib48.repository.UserRepositories;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.Random;
 
 import static com.k48.lib48.myEnum.TypeAbonnement.*;
 
@@ -48,7 +46,12 @@ public class CarteAbonnementService {
 		
 		CarteAbonnement carteAbonnement = new CarteAbonnement();
 		
-		carteAbonnement.setCardNumber(Long.parseLong(String.format("%09d", (UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE) % 1_000_000_000L)));
+		long min = 100_000_000L;
+		long max = 999_999_999L;
+		Random random = new Random();
+		long randomNumber = min + random.nextLong(max - min + 1);
+		
+		carteAbonnement.setCardNumber(randomNumber);
 		
 		carteAbonnement.setTypeAbonnement(typeAbonnement);
 		carteAbonnement.setAvailable(true);
@@ -60,11 +63,12 @@ public class CarteAbonnementService {
 			carteAbonnement.setDuree(15);
 		}
 		
+		carteAbonnementRepository.save(carteAbonnement);
+		
 		abonne.setCarteAbonnement(carteAbonnement);
 		
 		userRepositories.save(abonne);
 		
-		carteAbonnementRepository.save(carteAbonnement);
 	}
 	
 	public CarteAbonnement getCardID(int abonneID){

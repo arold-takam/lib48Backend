@@ -11,7 +11,7 @@ public class CarteAbonnement {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	
-	@Column(name = "card_number", unique = true)
+	@Column(name = "card_number", unique = true, length = 9)
 	private Long cardNumber;
 	
 	@Enumerated(EnumType.STRING)

@@ -1,6 +1,7 @@
 package com.k48.lib48.controller;
 
 import com.k48.lib48.dto.BorrowRequestDTO;
+import com.k48.lib48.dto.BorrowResponseDTO;
 import com.k48.lib48.models.BorrowBook;
 import com.k48.lib48.myEnum.Role;
 import com.k48.lib48.service.BorrowBookService;
@@ -39,11 +40,11 @@ public class BorrowBookController {
 	
 	
 	@GetMapping(path = "/get/{gerantID}")
-	public ResponseEntity<BorrowBook> getBorrowByID(@PathVariable int gerantID, @RequestParam int abonneID){
+	public ResponseEntity<BorrowResponseDTO> getBorrowByID(@PathVariable int gerantID, @RequestParam int abonneID){
 		try {
-			BorrowBook borrowBook = borrowBookService.getBorrowByID(gerantID, abonneID);
+			BorrowResponseDTO borrowResponseDTO = borrowBookService.getBorrowByID(gerantID, abonneID);
 			
-			return new ResponseEntity<>(borrowBook, HttpStatus.OK);
+			return new ResponseEntity<>(borrowResponseDTO, HttpStatus.OK);
 		}catch (IllegalArgumentException e){
 			System.out.println(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -54,12 +55,12 @@ public class BorrowBookController {
 	}
 	
 	@GetMapping(path = "/get/all/{gerantID}")
-	public ResponseEntity<List<BorrowBook> >getAllBorrows(@PathVariable int gerantID){
+	public ResponseEntity<List<BorrowResponseDTO> >getAllBorrows(@PathVariable int gerantID){
 		
 		try {
-			List<BorrowBook> borrowBook = borrowBookService.getAllBorrows(gerantID);
+			List<BorrowResponseDTO> borrowResponseDTOList = borrowBookService.getAllBorrows(gerantID);
 			
-			return new ResponseEntity<>(borrowBook, HttpStatus.OK);
+			return new ResponseEntity<>(borrowResponseDTOList, HttpStatus.OK);
 		}catch (IllegalArgumentException e){
 			System.out.println(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);

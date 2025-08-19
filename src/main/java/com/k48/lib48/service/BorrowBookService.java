@@ -2,6 +2,7 @@ package com.k48.lib48.service;
 
 
 import com.k48.lib48.dto.BorrowRequestDTO;
+import com.k48.lib48.dto.BorrowResponseDTO;
 import com.k48.lib48.models.Book;
 import com.k48.lib48.models.BorrowBook;
 import com.k48.lib48.models.CarteAbonnement;
@@ -13,6 +14,7 @@ import com.k48.lib48.repository.UserRepositories;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,8 +50,11 @@ public class BorrowBookService {
 		
 		User abonne = abonneOptional.get();
 		
-		Optional<BorrowBook> existingBorrow = borrowBookRepository.findByAbonne_Id(abonne.getId());
-		if (existingBorrow.isPresent()) {
+		List<BorrowBook>listOfBorrows = borrowBookRepository.findAllByAbonne_Id(borrowRequestDTO.abonneID());
+		BorrowBook LastBorrowBook = listOfBorrows.getLast();
+		
+		Book  dernierLivreEmprunte = LastBorrowBook.getBook();
+		if (!dernierLivreEmprunte.isEstDisponible()) {
 			throw new IllegalArgumentException("This abonne has already borrowed a book.");
 		}
 		
@@ -85,7 +90,7 @@ public class BorrowBookService {
 		
 	}
 	
-	public BorrowBook getBorrowByID(int gerantID, int abonneID){
+	public BorrowResponseDTO getBorrowByID(int gerantID, int abonneID){
 		Optional<BorrowBook>optionalBorrowBook = borrowBookRepository.findByGerant_IdAndAbonne_Id(gerantID, abonneID);
 		
 		if (optionalBorrowBook.isEmpty()){
@@ -98,16 +103,40 @@ public class BorrowBookService {
 			throw new IllegalArgumentException("This operation is only for Gerant.");
 		}
 		
-		return borrowBook;
+		return new BorrowResponseDTO(
+			borrowBook.getId(),
+			borrowBook.getGerant().getName(),
+			borrowBook.getAbonne().getName(),
+			borrowBook.getBook().getTitre(),
+			borrowBook.getDateEmprunt(),
+			borrowBook.getDelaiEmprunt()
+		);
 	}
 	
-	public List<BorrowBook>getAllBorrows(int gerantID){
+	public List<BorrowResponseDTO>getAllBorrows(int gerantID){
 	
 		if (userRepositories.existsById(gerantID) && userRepositories.findById(gerantID).get().getRoleName() != Role.GERANT){
 			throw new IllegalArgumentException("This operation is only for Gerant.");
 		}
 		
-		return borrowBookRepository.findAllByGerant_Id(gerantID);
+		List<BorrowBook>borrowBookList = borrowBookRepository.findAllByGerant_Id(gerantID);
+		
+		List<BorrowResponseDTO>borrowResponseDTOList = new ArrayList<>();
+		
+		for (BorrowBook borrow : borrowBookList){
+			borrowResponseDTOList.add(
+				new BorrowResponseDTO(
+					borrow.getId(),
+					borrow.getGerant().getName(),
+					borrow.getAbonne().getName(),
+					borrow.getBook().getTitre(),
+					borrow.getDateEmprunt(),
+					borrow.getDelaiEmprunt()
+				)
+			);
+		}
+		
+		return borrowResponseDTOList;
 	
 	}
 }

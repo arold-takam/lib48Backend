@@ -16,4 +16,6 @@ public interface BorrowBookRepository extends JpaRepository<BorrowBook, Integer>
 	Optional<BorrowBook>findByGerant_IdAndAbonne_Id(int gerantID, int abonneID);
 	
 	List<BorrowBook>findAllByGerant_Id(int gerantID);
+	
+	List<BorrowBook>findAllByAbonne_Id(int abonneID);
 }

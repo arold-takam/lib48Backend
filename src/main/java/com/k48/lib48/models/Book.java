@@ -1,14 +1,7 @@
 package com.k48.lib48.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.k48.lib48.myEnum.EtatLivre;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
-import java.util.Date;
 
 @Entity
 @Table(name = "book")
@@ -17,7 +10,7 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String titre;
     
     @Column(name = "auteur")
