@@ -50,14 +50,15 @@ public class BorrowBookService {
 		
 		User abonne = abonneOptional.get();
 		
-		List<BorrowBook>listOfBorrows = borrowBookRepository.findAllByAbonne_Id(borrowRequestDTO.abonneID());
-		BorrowBook LastBorrowBook = listOfBorrows.getLast();
-		
-		Book  dernierLivreEmprunte = LastBorrowBook.getBook();
-		if (!dernierLivreEmprunte.isEstDisponible()) {
-			throw new IllegalArgumentException("This abonne has already borrowed a book.");
+		Optional<Book> livreAEmprunterOpt = bookRespositories.findById(borrowRequestDTO.bookID());
+		if (livreAEmprunterOpt.isEmpty()) {
+			throw new IllegalArgumentException("Book not found with the ID: " + borrowRequestDTO.bookID());
 		}
 		
+		Book livreAEmprunter = livreAEmprunterOpt.get();
+		if (!livreAEmprunter.isEstDisponible()) {
+			throw new IllegalArgumentException("This book is not available.");
+		}
 		
 		CarteAbonnement carteAbonnement = abonne.getCarteAbonnement();
 		

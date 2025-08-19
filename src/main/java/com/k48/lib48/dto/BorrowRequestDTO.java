@@ -5,6 +5,6 @@ import com.k48.lib48.models.User;
 
 import java.time.LocalDate;
 
-public record BorrowRequestDTO(int abonneID, int bookID, int delaiEmprunt) {
+public record BorrowRequestDTO(int abonneID, long bookID, int delaiEmprunt) {
 
 }
