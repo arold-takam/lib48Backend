@@ -44,11 +44,20 @@ public class ReturnBookService {
 		User abonne = getAbonne(borrowBook.getAbonne().getId());
 		CarteAbonnement carte = getCarte(abonne);
 		Book book = borrowBook.getBook();
+		EtatLivre ancienEtat = book.getEtatLivre();
+		
+		if (ancienEtat.equals(EtatLivre.MAUVAIS_ETAT) && !nouvelEtatLivre.equals(EtatLivre.MAUVAIS_ETAT)) {
+			throw new IllegalArgumentException("The book is already in bad condition and can't be returned in good condition.");
+		}
+		
+		if (ancienEtat.equals(EtatLivre.BON_ETAT) && nouvelEtatLivre.equals(EtatLivre.NEUF)) {
+			throw new IllegalArgumentException("The book is already in good condition and can't be returned in best condition.");
+		}
 		
 		int delaiEmprunt = borrowBook.getDelaiEmprunt();
 		int delaiReel = (int) ChronoUnit.DAYS.between(borrowBook.getDateEmprunt(), dto.dateRetour());
 		
-		applyPenalite(carte, nouvelEtatLivre, delaiReel > delaiEmprunt);
+		applyPenalty(carte, ancienEtat,  nouvelEtatLivre, delaiReel > delaiEmprunt);
 		updateBook(book, nouvelEtatLivre);
 		
 		ReturnBook retour = buildReturnBook(gerant, borrowBook, nouvelEtatLivre, dto.dateRetour());
@@ -171,13 +180,24 @@ public class ReturnBookService {
 		return carte;
 	}
 	
-	private void applyPenalite(CarteAbonnement carte, EtatLivre etat, boolean enRetard) {
-		if (etat == EtatLivre.BON_ETAT) {
+	private void applyPenalty(CarteAbonnement carte,EtatLivre ancienEtat, EtatLivre nouvelEtat, boolean enRetard) {
+		if (nouvelEtat.equals(EtatLivre.MAUVAIS_ETAT) && !ancienEtat.equals(EtatLivre.MAUVAIS_ETAT)) {
+			carte.setAvailable(false);
+			carte.setDuree(0);
+//			carte.setDuree(enRetard ? 0 : carte.getDuree() / 2);
+			return;
+		}
+		
+		if (nouvelEtat == EtatLivre.BON_ETAT || nouvelEtat == EtatLivre.NEUF) {
 			carte.setAvailable(true);
 			if (enRetard) carte.setDuree(carte.getDuree() / 2);
 		} else {
-			carte.setAvailable(false);
-			carte.setDuree(enRetard ? 0 : carte.getDuree() / 2);
+			if (enRetard){
+				carte.setDuree(0);
+				carte.setAvailable(false);
+			}else {
+				carte.setDuree(carte.getDuree() / 2);
+			}
 		}
 		carteAbonnementRepository.save(carte);
 	}

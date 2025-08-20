@@ -49,7 +49,7 @@ public class BookServices {
         return bookRespo.findAllByCategory(category);
     }
 
-    public void createBook(EtatLivre livreEtat, long idCategory, BookRequestDTO   bookRequestDTO) {
+    public void createBook(long idCategory, BookRequestDTO   bookRequestDTO) {
         
         // Validation du titre: il ne peut être ni null ni vide
         if (bookRequestDTO == null || bookRequestDTO.titre() == null || bookRequestDTO.titre().isBlank()) {
@@ -70,7 +70,7 @@ public class BookServices {
         book.setAuteur(bookRequestDTO.auteur());
         book.setEstDisponible(true);
         book.setEditeur(bookRequestDTO.editeur());
-        book.setEtatLivre(livreEtat);
+        book.setEtatLivre(EtatLivre.NEUF);
         book.setCategory(category);
         
         categoryRepo.save(category);

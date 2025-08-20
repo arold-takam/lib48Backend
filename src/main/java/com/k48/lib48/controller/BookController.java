@@ -62,9 +62,9 @@ public class BookController {
 
     //POST BOOK----------------------------------
     @PostMapping(path = ("/create") , consumes = APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> createBook(@RequestParam EtatLivre etatLivre , @RequestParam long idCategory ,@RequestBody BookRequestDTO bookRequestDTO) {
+    public ResponseEntity<?> createBook( @RequestParam long idCategory ,@RequestBody BookRequestDTO bookRequestDTO) {
        try {
-           bookServices.createBook(etatLivre, idCategory, bookRequestDTO);
+           bookServices.createBook(idCategory, bookRequestDTO);
            
            return new ResponseEntity<>(HttpStatus.CREATED);
        }catch (NoSuchElementException e){
