@@ -46,6 +46,10 @@ public class ReturnBookService {
 		Book book = borrowBook.getBook();
 		EtatLivre ancienEtat = book.getEtatLivre();
 		
+		if (carte.getDuree() <= 1) {
+			throw new IllegalArgumentException("Your card availability is over.");
+		}
+		
 		if (ancienEtat.equals(EtatLivre.MAUVAIS_ETAT) && !nouvelEtatLivre.equals(EtatLivre.MAUVAIS_ETAT)) {
 			throw new IllegalArgumentException("The book is already in bad condition and can't be returned in good condition.");
 		}
