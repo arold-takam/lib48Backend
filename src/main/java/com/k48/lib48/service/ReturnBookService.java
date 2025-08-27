@@ -46,10 +46,6 @@ public class ReturnBookService {
 		Book book = borrowBook.getBook();
 		EtatLivre ancienEtat = book.getEtatLivre();
 		
-		if (carte.getDuree() <= 1) {
-			throw new IllegalArgumentException("Your card availability is over.");
-		}
-		
 		if (ancienEtat.equals(EtatLivre.MAUVAIS_ETAT) && !nouvelEtatLivre.equals(EtatLivre.MAUVAIS_ETAT)) {
 			throw new IllegalArgumentException("The book is already in bad condition and can't be returned in good condition.");
 		}
@@ -184,26 +180,33 @@ public class ReturnBookService {
 		return carte;
 	}
 	
-	private void applyPenalty(CarteAbonnement carte,EtatLivre ancienEtat, EtatLivre nouvelEtat, boolean enRetard) {
-		if (nouvelEtat.equals(EtatLivre.MAUVAIS_ETAT) && !ancienEtat.equals(EtatLivre.MAUVAIS_ETAT)) {
-			carte.setAvailable(false);
-			carte.setDuree(0);
-//			carte.setDuree(enRetard ? 0 : carte.getDuree() / 2);
-			return;
-		}
-		
-		if (nouvelEtat == EtatLivre.BON_ETAT || nouvelEtat == EtatLivre.NEUF) {
-			carte.setAvailable(true);
-			if (enRetard) carte.setDuree(carte.getDuree() / 2);
-		} else {
-			if (enRetard){
-				carte.setDuree(0);
-				carte.setAvailable(false);
-			}else {
+//UTILITIES METHODS--------------------------------------------------------------------------------------------------------------------------
+	
+	private void applyPenalty(CarteAbonnement carte, EtatLivre ancienEtat, EtatLivre nouvelEtat, boolean enRetard) {
+		if (enRetard){
+			if (nouvelEtat.equals(ancienEtat)){
+				carte.setAvailable(true);
 				carte.setDuree(carte.getDuree() / 2);
+				
+				carteAbonnementRepository.save(carte);
+				return;
+			} else if (nouvelEtat.equals(EtatLivre.MAUVAIS_ETAT)) {
+				carte.setAvailable(false);
+				carte.setDuree(0);
+				
+				carteAbonnementRepository.save(carte);
+				return;
 			}
 		}
-		carteAbonnementRepository.save(carte);
+		
+		if (nouvelEtat.equals(EtatLivre.MAUVAIS_ETAT)){
+			if (!ancienEtat.equals(EtatLivre.MAUVAIS_ETAT)){
+				carte.setDuree(carte.getDuree() / 2);
+				
+				carteAbonnementRepository.save(carte);
+				return;
+			}
+		}
 	}
 	
 	private void updateBook(Book book, EtatLivre nouvelEtat) {

@@ -35,7 +35,7 @@ public class BorrowBookService {
 	
 	
 //	BORROWING MANAGEMENT-----------------------------------------------------------------------------------------------------------------
-	public void makeBorrow(int gerantID, BorrowRequestDTO borrowRequestDTO) {
+	public void makeBorrow(int gerantID, BorrowRequestDTO borrowRequestDTO)   {
 		Optional<User>optionalGerant = userRepositories.findById(gerantID);
 		if (optionalGerant.isEmpty() || !optionalGerant.get().getRoleName().equals(Role.GERANT)){
 			throw new IllegalArgumentException("Gerant not found with the ID: "+gerantID);
@@ -68,6 +68,10 @@ public class BorrowBookService {
 		
 		if (!carteAbonnement.isAvailable()){
 			throw new IllegalArgumentException("This card is not available.");
+		}
+		
+		if (carteAbonnement.getDuree() <= 1) {
+			throw new IllegalArgumentException("Your card availability is over.");
 		}
 		
 		Book bookToBorrow = bookServices.getBookId(borrowRequestDTO.bookID());
