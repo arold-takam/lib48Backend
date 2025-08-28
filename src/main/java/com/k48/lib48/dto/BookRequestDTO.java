@@ -7,4 +7,5 @@ import java.time.LocalDate;
 
 public record BookRequestDTO(String titre, String auteur, String editeur ) {
 
+
 }

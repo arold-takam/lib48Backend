@@ -7,7 +7,10 @@ import com.k48.lib48.models.Category;
 import com.k48.lib48.myEnum.EtatLivre;
 import com.k48.lib48.repository.BookRespositories;
 import com.k48.lib48.repository.CategoryRepositories;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -18,10 +21,12 @@ public class BookServices {
 
     private final BookRespositories bookRespo;
     private final CategoryRepositories categoryRepo;
+    private final FileStorageService fileStorageService;
 
-    public BookServices(BookRespositories bookRespo, CategoryRepositories categoryRepo) {
+    public BookServices(BookRespositories bookRespo, CategoryRepositories categoryRepo ,FileStorageService fileStorageService) {
         this.bookRespo = bookRespo;
         this.categoryRepo = categoryRepo;
+        this.fileStorageService= fileStorageService;
     }
 
     public List<Book> getAllBooks() {
@@ -49,7 +54,8 @@ public class BookServices {
         return bookRespo.findAllByCategory(category);
     }
 
-    public void createBook(long idCategory, BookRequestDTO   bookRequestDTO) {
+    @Transactional
+    public Book createBook(long idCategory, BookRequestDTO   bookRequestDTO, MultipartFile coverImage) {
         
         // Validation du titre: il ne peut être ni null ni vide
         if (bookRequestDTO == null || bookRequestDTO.titre() == null || bookRequestDTO.titre().isBlank()) {
@@ -65,7 +71,12 @@ public class BookServices {
         Category category = categoryOpt.get();
         
         Book book = new Book();
-        
+
+        //valider l'image de couverture
+        if (coverImage != null && !coverImage.isEmpty()) {
+            String fileName = fileStorageService.storeFile(coverImage, book.getId() );
+            book.setCoverImage(fileName);
+        }
         book.setTitre(bookRequestDTO.titre());
         book.setAuteur(bookRequestDTO.auteur());
         book.setEstDisponible(true);
@@ -74,11 +85,10 @@ public class BookServices {
         book.setCategory(category);
         
         categoryRepo.save(category);
-        
-        bookRespo.save(book);
+       return bookRespo.save(book);
     }
 
-    public Book updateBook(long id, EtatLivre livreEtat , long idCategory ,BookUpDateDTO bookUpDateDTO) {
+    public Book updateBook(long id, EtatLivre livreEtat , long idCategory ,BookUpDateDTO bookUpDateDTO, MultipartFile coverImage) {
         Book existingBook = bookRespo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Book not found"));
         
@@ -87,12 +97,18 @@ public class BookServices {
             throw new NoSuchElementException("Category not found ");
         }
 
+        if (coverImage != null && !coverImage.isEmpty()) {
+            fileStorageService.deleteFile(existingBook.getCoverImage());
+        }
+        String fileName = fileStorageService.storeFile(coverImage, existingBook.getId() );
+        existingBook.setCoverImage(fileName);
         existingBook.setTitre(bookUpDateDTO.titre());
         existingBook.setAuteur(bookUpDateDTO.auteur());
         existingBook.setEstDisponible(bookUpDateDTO.estDisponible());
         existingBook.setEditeur(bookUpDateDTO.editeur());
         existingBook.setEtatLivre(livreEtat);
         existingBook.setCategory(category.get());
+
      
         
         return bookRespo.save(existingBook);

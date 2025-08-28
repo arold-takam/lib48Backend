@@ -26,6 +26,9 @@ public class Book {
     @Enumerated(EnumType.STRING)
     private EtatLivre etatLivre;
 
+    @Column(name = "imageDeCouverture")
+    private  String coverImage;
+
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
@@ -96,5 +99,13 @@ public class Book {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
     }
 }
