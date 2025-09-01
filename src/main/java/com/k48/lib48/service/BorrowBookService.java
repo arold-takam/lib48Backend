@@ -1,8 +1,7 @@
 package com.k48.lib48.service;
 
 
-import com.k48.lib48.dto.BorrowRequestDTO;
-import com.k48.lib48.dto.BorrowResponseDTO;
+import com.k48.lib48.dto.*;
 import com.k48.lib48.models.Book;
 import com.k48.lib48.models.BorrowBook;
 import com.k48.lib48.models.CarteAbonnement;
@@ -14,6 +13,7 @@ import com.k48.lib48.repository.UserRepositories;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,19 +23,21 @@ public class BorrowBookService {
 	private final UserRepositories userRepositories;
 	private final BorrowBookRepository borrowBookRepository;
 	private final BookRespositories bookRespositories;
-	
+	private final HistoryService historyService;
 	private final BookServices bookServices;
 	
-	public BorrowBookService(UserRepositories userRepositories, BorrowBookRepository borrowBookRepository, BookRespositories bookRespositories, BookServices bookServices) {
+	public BorrowBookService(UserRepositories userRepositories, BorrowBookRepository borrowBookRepository, BookRespositories bookRespositories, BookServices bookServices, HistoryService historyService) {
 		this.userRepositories = userRepositories;
 		this.borrowBookRepository = borrowBookRepository;
 		this.bookRespositories = bookRespositories;
 		this.bookServices = bookServices;
+		this.historyService = historyService;
 	}
 	
 	
 //	BORROWING MANAGEMENT-----------------------------------------------------------------------------------------------------------------
 	public void makeBorrow(int gerantID, BorrowRequestDTO borrowRequestDTO)   {
+
 		Optional<User>optionalGerant = userRepositories.findById(gerantID);
 		if (optionalGerant.isEmpty() || !optionalGerant.get().getRoleName().equals(Role.GERANT)){
 			throw new IllegalArgumentException("Gerant not found with the ID: "+gerantID);
@@ -61,22 +63,36 @@ public class BorrowBookService {
 		}
 		
 		CarteAbonnement carteAbonnement = abonne.getCarteAbonnement();
-		
+
+		HistoryDTO historyGerantTrue = new HistoryDTO("Gerant",livreAEmprunter.getTitre(),"Borrow","SUCCESS", LocalDateTime.now(),"Emprunt réussi");
+		HistoryDTO historyGerantFalse = new HistoryDTO("Gerant",livreAEmprunter.getTitre(),"Borrow","FAILED", LocalDateTime.now(),"Echec de l'emprunt");
+		HistoryDTO historyAbonneTrue = new HistoryDTO("Abonnée",livreAEmprunter.getTitre(),"BORROW","SUCCESS",LocalDateTime.now(),"Emprunt réussi");
+		HistoryDTO historyAbonneFalse = new HistoryDTO("Abonnée",livreAEmprunter.getTitre(),"BORROW","FAILED",LocalDateTime.now(),"Echec de l'emprunt");
+
+
 		if (carteAbonnement == null){
+			historyService.createHistory(historyAbonneFalse);
+			historyService.createHistory(historyGerantFalse);
 			throw new IllegalArgumentException("This abonne has no card yet.");
 		}
 		
 		if (!carteAbonnement.isAvailable()){
+			historyService.createHistory(historyAbonneFalse);
+			historyService.createHistory(historyGerantFalse);
 			throw new IllegalArgumentException("This card is not available.");
 		}
 		
 		if (carteAbonnement.getDuree() <= 1) {
+			historyService.createHistory(historyAbonneFalse);
+			historyService.createHistory(historyGerantFalse);
 			throw new IllegalArgumentException("Your card availability is over.");
 		}
 		
 		Book bookToBorrow = bookServices.getBookId(borrowRequestDTO.bookID());
 		
 		if (!bookToBorrow.isEstDisponible()){
+			historyService.createHistory(historyAbonneFalse);
+			historyService.createHistory(historyGerantFalse);
 			throw  new IllegalArgumentException("This book is not available.");
 		}
 		
@@ -90,7 +106,10 @@ public class BorrowBookService {
 		borrowBook.setBook(bookToBorrow);
 		borrowBook.setDateEmprunt(LocalDate.now());
 		borrowBook.setDelaiEmprunt(borrowRequestDTO.delaiEmprunt());
-		
+
+		historyService.createHistory(historyAbonneTrue);
+		historyService.createHistory(historyGerantTrue);
+
 		borrowBookRepository.save(borrowBook);
 		
 	}

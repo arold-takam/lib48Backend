@@ -1,5 +1,6 @@
 package com.k48.lib48.service;
 
+import com.k48.lib48.dto.HistoryDTO;
 import com.k48.lib48.dto.ReturnRequestDTO;
 import com.k48.lib48.dto.ReturnResponseDTO;
 import com.k48.lib48.models.*;
@@ -9,6 +10,7 @@ import com.k48.lib48.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,16 +23,18 @@ public class ReturnBookService {
 	private final UserRepositories userRepositories;
 	private final CarteAbonnementRepository carteAbonnementRepository;
 	private BookRespositories bookRespositories;
+	private final HistoryService historyService;
 
 	private final UserServices userServices;
 	
-	public ReturnBookService(ReturnBookRepository returnBookRepository, BorrowBookRepository borrowBookRepository, UserRepositories userRepositories, BookRespositories bookRespositories, CarteAbonnementRepository carteAbonnementRepository, UserServices userServices) {
+	public ReturnBookService(ReturnBookRepository returnBookRepository, BorrowBookRepository borrowBookRepository, UserRepositories userRepositories, BookRespositories bookRespositories, CarteAbonnementRepository carteAbonnementRepository, UserServices userServices, HistoryService historyService) {
 		this.returnBookRepository = returnBookRepository;
 		this.borrowBookRepository = borrowBookRepository;
 		this.userRepositories = userRepositories;
 		this.bookRespositories = bookRespositories;
 		this.carteAbonnementRepository = carteAbonnementRepository;
 		this.userServices = userServices;
+		this.historyService = historyService;
 	}
 	
 	
@@ -45,12 +49,22 @@ public class ReturnBookService {
 		CarteAbonnement carte = getCarte(abonne);
 		Book book = borrowBook.getBook();
 		EtatLivre ancienEtat = book.getEtatLivre();
+
+		HistoryDTO historyGerantTrue = new HistoryDTO("Gerant",book.getTitre(),"RETURN","SUCCESS", LocalDateTime.now(),"Retour réussi");
+		HistoryDTO historyGerantFalse = new HistoryDTO("Gerant",book.getTitre(),"RETURN","FAILED", LocalDateTime.now(),"Echec du retour");
+		HistoryDTO historyAbonneTrue = new HistoryDTO("Abonnée",book.getTitre(),"RETURN","SUCCESS",LocalDateTime.now(),"Retour réussi");
+		HistoryDTO historyAbonneFalse = new HistoryDTO("Abonnée",book.getTitre(),"RETURN","FAILED",LocalDateTime.now(),"Echec du retour");
+
 		
 		if (ancienEtat.equals(EtatLivre.MAUVAIS_ETAT) && !nouvelEtatLivre.equals(EtatLivre.MAUVAIS_ETAT)) {
+			historyService.createHistory(historyAbonneFalse);
+			historyService.createHistory(historyGerantFalse);
 			throw new IllegalArgumentException("The book is already in bad condition and can't be returned in good condition.");
 		}
 		
 		if (ancienEtat.equals(EtatLivre.BON_ETAT) && nouvelEtatLivre.equals(EtatLivre.NEUF)) {
+			historyService.createHistory(historyAbonneFalse);
+			historyService.createHistory(historyGerantFalse);
 			throw new IllegalArgumentException("The book is already in good condition and can't be returned in best condition.");
 		}
 		
@@ -61,6 +75,10 @@ public class ReturnBookService {
 		updateBook(book, nouvelEtatLivre);
 		
 		ReturnBook retour = buildReturnBook(gerant, borrowBook, nouvelEtatLivre, dto.dateRetour());
+
+		historyService.createHistory(historyAbonneTrue);
+		historyService.createHistory(historyGerantTrue);
+
 		returnBookRepository.save(retour);
 	}
 	

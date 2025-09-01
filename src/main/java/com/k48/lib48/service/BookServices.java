@@ -2,6 +2,7 @@ package com.k48.lib48.service;
 
 import com.k48.lib48.dto.BookRequestDTO;
 import com.k48.lib48.dto.BookUpDateDTO;
+import com.k48.lib48.dto.HistoryDTO;
 import com.k48.lib48.models.Book;
 import com.k48.lib48.models.Category;
 import com.k48.lib48.myEnum.EtatLivre;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -22,11 +24,13 @@ public class BookServices {
     private final BookRespositories bookRespo;
     private final CategoryRepositories categoryRepo;
     private final FileStorageService fileStorageService;
+    private final HistoryService historyService;
 
-    public BookServices(BookRespositories bookRespo, CategoryRepositories categoryRepo ,FileStorageService fileStorageService) {
+    public BookServices(BookRespositories bookRespo, CategoryRepositories categoryRepo ,FileStorageService fileStorageService, HistoryService historyService) {
         this.bookRespo = bookRespo;
         this.categoryRepo = categoryRepo;
         this.fileStorageService= fileStorageService;
+        this.historyService = historyService;
     }
 
     public List<Book> getAllBooks() {
@@ -54,7 +58,9 @@ public class BookServices {
         return bookRespo.findAllByCategory(category);
     }
 
+
     @Transactional
+
     public Book createBook(long idCategory, BookRequestDTO   bookRequestDTO, MultipartFile coverImage) {
         
         // Validation du titre: il ne peut être ni null ni vide
@@ -72,10 +78,16 @@ public class BookServices {
         
         Book book = new Book();
 
+
+        HistoryDTO historyGerantTrue = new HistoryDTO("Gerant",book.getTitre(),"CREATE","SUCCESS", LocalDateTime.now(),"Echec de la création du livre couverture non validé");
+        HistoryDTO historyGerantFalse = new HistoryDTO("Gerant",book.getTitre(),"CREATE","FAILED", LocalDateTime.now(),"Création du livre réussi");
+
         //valider l'image de couverture
         if (coverImage != null && !coverImage.isEmpty()) {
             String fileName = fileStorageService.storeFile(coverImage, book.getId() );
             book.setCoverImage(fileName);
+        }else {
+            historyService.createHistory(historyGerantFalse);
         }
         book.setTitre(bookRequestDTO.titre());
         book.setAuteur(bookRequestDTO.auteur());
@@ -83,6 +95,8 @@ public class BookServices {
         book.setEditeur(bookRequestDTO.editeur());
         book.setEtatLivre(EtatLivre.NEUF);
         book.setCategory(category);
+
+        historyService.createHistory(historyGerantTrue);
         
         categoryRepo.save(category);
        return bookRespo.save(book);
@@ -91,9 +105,13 @@ public class BookServices {
     public Book updateBook(long id, EtatLivre livreEtat , long idCategory ,BookUpDateDTO bookUpDateDTO, MultipartFile coverImage) {
         Book existingBook = bookRespo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Book not found"));
+
+        HistoryDTO historyGerantTrue = new HistoryDTO("Gerant",existingBook.getTitre(),"UPDATE","SUCCESS", LocalDateTime.now(),"Echec de la mise à jour du livre ");
+        HistoryDTO historyGerantFalse = new HistoryDTO("Gerant",existingBook.getTitre(),"UPDATE","FAILED", LocalDateTime.now(),"Mise à jour du livre réussi");
         
         Optional<Category> category =  categoryRepo.findById(idCategory);
         if (category.isEmpty()){
+            historyService.createHistory(historyGerantFalse);
             throw new NoSuchElementException("Category not found ");
         }
 
@@ -109,15 +127,22 @@ public class BookServices {
         existingBook.setEtatLivre(livreEtat);
         existingBook.setCategory(category.get());
 
-     
+        historyService.createHistory(historyGerantTrue);
         
         return bookRespo.save(existingBook);
     }
 
     public void deleteBook(long id) {
+
+        HistoryDTO historyGerantTrue = new HistoryDTO("Gerant",bookRespo.findById(id).get().getTitre(),"DELETE","SUCCESS", LocalDateTime.now(),"Echec de la supression du livre ");
+        HistoryDTO historyGerantFalse = new HistoryDTO("Gerant",bookRespo.findById(id).get().getTitre(),"DELETE","FAILED", LocalDateTime.now(),"Supression du livre réussi");
+
         if (!bookRespo.existsById(id)) {
+            historyService.createHistory(historyGerantFalse);
             throw new NoSuchElementException("Book not found");
         }
+
+        historyService.createHistory(historyGerantTrue);
         bookRespo.deleteById(id);
     }
 }
