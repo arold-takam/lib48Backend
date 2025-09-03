@@ -60,7 +60,6 @@ public class BookServices {
 
 
     @Transactional
-
     public Book createBook(long idCategory, BookRequestDTO   bookRequestDTO, MultipartFile coverImage) {
         
         // Validation du titre: il ne peut être ni null ni vide
