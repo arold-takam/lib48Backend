@@ -71,6 +71,7 @@ public class BookServices {
         //Trouver la categorie
         Optional<Category> categoryOpt = categoryRepo.findById(idCategory);
         if (categoryOpt.isEmpty()) {
+
             throw new NoSuchElementException("Category not found");
         }
         
@@ -86,8 +87,6 @@ public class BookServices {
         if (coverImage != null && !coverImage.isEmpty()) {
             String fileName = fileStorageService.storeFile(coverImage, book.getId() );
             book.setCoverImage(fileName);
-        }else {
-            historyService.createHistory(historyGerantFalse);
         }
         book.setTitre(bookRequestDTO.titre());
         book.setAuteur(bookRequestDTO.auteur());
