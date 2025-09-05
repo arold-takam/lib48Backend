@@ -1,19 +1,18 @@
 package com.k48.lib48.service;
 
-
 import com.k48.lib48.dto.*;
 import com.k48.lib48.models.Book;
 import com.k48.lib48.models.BorrowBook;
 import com.k48.lib48.models.CarteAbonnement;
 import com.k48.lib48.models.User;
+import com.k48.lib48.myEnum.EtatOpperation;
 import com.k48.lib48.myEnum.Role;
+import com.k48.lib48.myEnum.TypeOpperation;
 import com.k48.lib48.repository.BookRespositories;
 import com.k48.lib48.repository.BorrowBookRepository;
 import com.k48.lib48.repository.UserRepositories;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,8 +22,8 @@ public class BorrowBookService {
 	private final UserRepositories userRepositories;
 	private final BorrowBookRepository borrowBookRepository;
 	private final BookRespositories bookRespositories;
-	private final HistoryService historyService;
 	private final BookServices bookServices;
+	private final HistoryService historyService;
 	
 	public BorrowBookService(UserRepositories userRepositories, BorrowBookRepository borrowBookRepository, BookRespositories bookRespositories, BookServices bookServices, HistoryService historyService) {
 		this.userRepositories = userRepositories;
@@ -47,6 +46,10 @@ public class BorrowBookService {
 		
 		Optional<User>abonneOptional = userRepositories.findById(borrowRequestDTO.abonneID());
 		if (abonneOptional.isEmpty() || !abonneOptional.get().getRoleName().equals(Role.ABONNE)){
+			User abonne = abonneOptional.get();
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate.");
+			historyService.addToHistory(historyRequestDTO);
+			
 			throw new IllegalArgumentException("Abonne not found with the ID: "+borrowRequestDTO.abonneID());
 		}
 		
@@ -54,45 +57,49 @@ public class BorrowBookService {
 		
 		Optional<Book> livreAEmprunterOpt = bookRespositories.findById(borrowRequestDTO.bookID());
 		if (livreAEmprunterOpt.isEmpty()) {
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate.");
+			historyService.addToHistory(historyRequestDTO);
+			
 			throw new IllegalArgumentException("Book not found with the ID: " + borrowRequestDTO.bookID());
 		}
 		
 		Book livreAEmprunter = livreAEmprunterOpt.get();
 		if (!livreAEmprunter.isEstDisponible()) {
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate.");
+			historyService.addToHistory(historyRequestDTO);
+			
 			throw new IllegalArgumentException("This book is not available.");
 		}
 		
 		CarteAbonnement carteAbonnement = abonne.getCarteAbonnement();
 
-		HistoryDTO historyGerantTrue = new HistoryDTO("Gerant",livreAEmprunter.getTitre(),"Borrow","SUCCESS", LocalDateTime.now(),"Emprunt réussi");
-		HistoryDTO historyGerantFalse = new HistoryDTO("Gerant",livreAEmprunter.getTitre(),"Borrow","FAILED", LocalDateTime.now(),"Echec de l'emprunt");
-		HistoryDTO historyAbonneTrue = new HistoryDTO("Abonnée",livreAEmprunter.getTitre(),"BORROW","SUCCESS",LocalDateTime.now(),"Emprunt réussi");
-		HistoryDTO historyAbonneFalse = new HistoryDTO("Abonnée",livreAEmprunter.getTitre(),"BORROW","FAILED",LocalDateTime.now(),"Echec de l'emprunt");
-
-
 		if (carteAbonnement == null){
-			historyService.createHistory(historyAbonneFalse);
-			historyService.createHistory(historyGerantFalse);
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate.");
+			historyService.addToHistory(historyRequestDTO);
+			
 			throw new IllegalArgumentException("This abonne has no card yet.");
 		}
 		
 		if (!carteAbonnement.isAvailable()){
-			historyService.createHistory(historyAbonneFalse);
-			historyService.createHistory(historyGerantFalse);
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate.");
+			historyService.addToHistory(historyRequestDTO);
+			
 			throw new IllegalArgumentException("This card is not available.");
 		}
 		
 		if (carteAbonnement.getDuree() <= 1) {
-			historyService.createHistory(historyAbonneFalse);
-			historyService.createHistory(historyGerantFalse);
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate.");
+			historyService.addToHistory(historyRequestDTO);
+			
 			throw new IllegalArgumentException("Your card availability is over.");
 		}
 		
 		Book bookToBorrow = bookServices.getBookId(borrowRequestDTO.bookID());
 		
 		if (!bookToBorrow.isEstDisponible()){
-			historyService.createHistory(historyAbonneFalse);
-			historyService.createHistory(historyGerantFalse);
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate.");
+			historyService.addToHistory(historyRequestDTO);
+			
 			throw  new IllegalArgumentException("This book is not available.");
 		}
 		
@@ -106,9 +113,9 @@ public class BorrowBookService {
 		borrowBook.setBook(bookToBorrow);
 		borrowBook.setDateEmprunt(LocalDate.now());
 		borrowBook.setDelaiEmprunt(borrowRequestDTO.delaiEmprunt());
-
-		historyService.createHistory(historyAbonneTrue);
-		historyService.createHistory(historyGerantTrue);
+		
+		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.SUCCES, "Emprunt reussit.");
+		historyService.addToHistory(historyRequestDTO);
 
 		borrowBookRepository.save(borrowBook);
 		

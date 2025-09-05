@@ -17,8 +17,8 @@ public class Category {
     @Column( nullable = false , unique = true)
     private String nom;
 
+    @Column(name = "description")
     private String description;
-    
     
     public Category(String nom, String description) {
         this.nom = nom;

@@ -1,91 +1,61 @@
 package com.k48.lib48.service;
 
-import com.k48.lib48.dto.HistoryDTO;
+import com.k48.lib48.dto.HistoryRequestDTO;
 import com.k48.lib48.models.History;
-import com.k48.lib48.repository.*;
+import com.k48.lib48.myEnum.EtatOpperation;
+import com.k48.lib48.myEnum.TypeOpperation;
+import com.k48.lib48.repository.HistoryRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class HistoryService {
-
-    private final HistoryRepository historyRepository;
-
-    public HistoryService(  HistoryRepository historyRepository) {
-        this.historyRepository = historyRepository;
-    }
-
-
-    public void createHistory(HistoryDTO historyDTO) {
-        if(historyDTO == null) {
-            throw new IllegalArgumentException("historyDTO cannot be null");
-        }
-
-        try {
-            History history = new History();
-            history.setUser(historyDTO.users());
-            history.setBookTitle(historyDTO.bookTitle());
-            history.setOperation(historyDTO.operation());
-            history.setEtatOperation(historyDTO.etatOperation());
-            history.setDateTime(historyDTO.dateTime());
-            history.setDetails(historyDTO.details());
-            historyRepository.save(history);
-        }catch (Exception e){
-            System.err.println("Erreur lors de la création de l'historique de l'abonnée: ");
-            throw new RuntimeException("Erreur lors de la création de l'historique: " + e.getMessage());
-        }
-    }
-    private HistoryDTO toDTO(History history) {
-        return new HistoryDTO(
-                history.getUser(),
-                history.getBookTitle(),
-                history.getOperation(),
-                history.getEtatOperation(),
-                history.getDateTime(),
-                history.getDetails()
-        );
-    }
-
-    public List<HistoryDTO> getAllHistory() {
-        return historyRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
-    }
-
-    public HistoryDTO getHistoryById(Long id) {
-        Optional<History> history = historyRepository.findById(id);
-        if(history.isEmpty()) {
-            throw new NoSuchElementException("L'historique n'existe pas");
-        }
-        return toDTO(history.orElse(null));
-    }
-
-    public List<HistoryDTO> getEtatOperation(String etatOperation) {
-        List<HistoryDTO> histories = historyRepository.findByEtatOperation(etatOperation).stream().map(this::toDTO).collect(Collectors.toList());
-        return histories;
-    }
-
-    public List<History> getBookTitle(String bookTitle) {
-        List<History> history =historyRepository.findByBookTitle(bookTitle);
-        return history;
-    }
-    public List<History> getOperation(String operation) {
-        return (List<History>) historyRepository.findByOperation(operation);
-    }
-
-    public List<History> getUser(String users) {
-        return (List<History>) historyRepository.findByUsers(users);
-    }
-
-    public void deleteHistory(Long id) {
-       Optional< History >history = historyRepository.findById(id);
-       if (history.isPresent()) {
-           historyRepository.delete(history.get());
-       }else{
-           throw new NoSuchElementException("History not found");
-       }
-    }
-
+	private HistoryRepository historyRepository;
+	
+	public HistoryService(HistoryRepository historyRepository) {
+		this.historyRepository = historyRepository;
+	}
+	
+	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void addToHistory(HistoryRequestDTO historyRequestDTO){
+		if (historyRequestDTO == null){
+			throw new IllegalArgumentException("Something went wrong, we will solve it earlier as possible.");
+		}
+		
+		History history = new History();
+		history.setBookTitle(historyRequestDTO.bookTitle());
+		history.setTypeOpperation(historyRequestDTO.typeOpperation());
+		history.setEtatOperation(historyRequestDTO.etatOpperation());
+		history.setDateTime(LocalDateTime.now());
+		history.setDetails(historyRequestDTO.details());
+		history.setUserName(historyRequestDTO.userName());
+		
+		historyRepository.save(history);
+	}
+	
+	public History getHistoryByID(int historyID){
+		if (!historyRepository.existsById(historyID)){
+			throw new IllegalArgumentException("No history found at the ID: "+historyID);
+		}
+		
+		return historyRepository.findById(historyID).get();
+	}
+	
+	public List<History>findByTypeOperations(TypeOpperation typeOpperation){
+		return historyRepository.findByTypeOpperation(typeOpperation);
+	}
+	
+	public List<History>findByEtatOperation(EtatOpperation etatOpperation){
+		return historyRepository.findByEtatOperation(etatOpperation);
+	}
+	
+	public List<History>findByUserName(String userName){
+		return historyRepository.findByUserName(userName);
+	}
+	
 }

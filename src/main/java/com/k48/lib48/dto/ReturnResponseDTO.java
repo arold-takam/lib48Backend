@@ -1,6 +1,5 @@
 package com.k48.lib48.dto;
 
-import com.k48.lib48.models.BorrowBook;
 import com.k48.lib48.myEnum.EtatLivre;
 
 import java.time.LocalDate;

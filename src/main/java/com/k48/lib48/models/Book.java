@@ -10,7 +10,7 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "titre", nullable = false, unique = true)
     private String titre;
     
     @Column(name = "auteur")
@@ -26,8 +26,8 @@ public class Book {
     @Enumerated(EnumType.STRING)
     private EtatLivre etatLivre;
 
-    @Column(name = "imageDeCouverture")
-    private  String coverImage;
+    @Column(name = "url_cover_book")
+    private  String urlCoverImage;
 
 
     @ManyToOne
@@ -36,35 +36,36 @@ public class Book {
     
     public Book() {}
     
-    public Book(String titre, String auteur, boolean estDisponible, String editeur, EtatLivre etatLivre, Category category) {
+    public Book(String titre, String auteur, boolean estDisponible, String editeur, EtatLivre etatLivre, String urlCoverImage, Category category) {
         this.titre = titre;
         this.auteur = auteur;
         this.estDisponible = estDisponible;
         this.editeur = editeur;
         this.etatLivre = etatLivre;
+        this.urlCoverImage = urlCoverImage;
         this.category = category;
     }
     
     public Long getId() {
         return id;
     }
-
+    
     public void setId(Long id) {
         this.id = id;
     }
-
+    
     public String getTitre() {
         return titre;
     }
-
+    
     public void setTitre(String titre) {
         this.titre = titre;
     }
-
+    
     public String getAuteur() {
         return auteur;
     }
-
+    
     public void setAuteur(String auteur) {
         this.auteur = auteur;
     }
@@ -80,32 +81,32 @@ public class Book {
     public String getEditeur() {
         return editeur;
     }
-
+    
     public void setEditeur(String editeur) {
         this.editeur = editeur;
     }
-
+    
     public EtatLivre getEtatLivre() {
         return etatLivre;
     }
-
+    
     public void setEtatLivre(EtatLivre etatLivre) {
         this.etatLivre = etatLivre;
     }
-
+    
+    public String getUrlCoverImage() {
+        return urlCoverImage;
+    }
+    
+    public void setUrlCoverImage(String urlCoverImage) {
+        this.urlCoverImage = urlCoverImage;
+    }
+    
     public Category getCategory() {
         return category;
     }
-
+    
     public void setCategory(Category category) {
         this.category = category;
-    }
-
-    public String getCoverImage() {
-        return coverImage;
-    }
-
-    public void setCoverImage(String coverImage) {
-        this.coverImage = coverImage;
     }
 }

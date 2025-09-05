@@ -38,6 +38,7 @@ public class UserController {
 			
 			return new ResponseEntity<>(HttpStatus.CREATED);
 		}catch (IllegalArgumentException e){
+			System.out.println(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
 	}
@@ -95,13 +96,15 @@ public class UserController {
 	public ResponseEntity<Void>deleteUser(@PathVariable int userID){
 		try {
 			boolean delete = userServices.deleteUser(userID);
-			
 			if (delete){
-				return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			}else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
+		}catch (IllegalArgumentException e){
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}catch (Exception e){
+			System.out.println(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -157,7 +160,7 @@ public class UserController {
 			boolean delete = carteAbonnementService.deleteCard(abonneID);
 			
 			if (delete){
-				return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			}else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -176,8 +179,10 @@ public class UserController {
 			
 			return new ResponseEntity<>(HttpStatus.OK);
 		}catch (IllegalArgumentException e){
+			System.out.println(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}catch (Exception e){
+			System.out.println(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}

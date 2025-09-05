@@ -15,6 +15,7 @@ public class CarteAbonnement {
 	private Long cardNumber;
 	
 	@Enumerated(EnumType.STRING)
+	@Column(name = "type_abonnement")
 	private TypeAbonnement typeAbonnement;
 	
 	@Column(name = "availability", nullable = false)
