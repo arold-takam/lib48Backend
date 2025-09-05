@@ -2,9 +2,11 @@ package com.k48.lib48.service;
 
 import com.k48.lib48.dto.HistoryRequestDTO;
 import com.k48.lib48.models.History;
+import com.k48.lib48.models.User;
 import com.k48.lib48.myEnum.EtatOpperation;
 import com.k48.lib48.myEnum.TypeOpperation;
 import com.k48.lib48.repository.HistoryRepository;
+import com.k48.lib48.repository.UserRepositories;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,10 +16,12 @@ import java.util.List;
 
 @Service
 public class HistoryService {
+	private final UserRepositories userRepositories;
 	private HistoryRepository historyRepository;
 	
-	public HistoryService(HistoryRepository historyRepository) {
+	public HistoryService(HistoryRepository historyRepository, UserRepositories userRepositories) {
 		this.historyRepository = historyRepository;
+		this.userRepositories = userRepositories;
 	}
 	
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -55,7 +59,14 @@ public class HistoryService {
 	}
 	
 	public List<History>findByUserName(String userName){
-		return historyRepository.findByUserName(userName);
+		User user = userRepositories.findByNameIgnoreCase(userName);
+		System.out.println(user.getName());
+
+		if (user == null){
+			throw new IllegalArgumentException("No user found at the name: "+userName);
+		}
+
+        return historyRepository.findAllByUserNameIgnoreCase(userName);
 	}
 	
 }

@@ -13,5 +13,5 @@ public interface HistoryRepository extends JpaRepository<History, Integer>{
 
 	List<History> findByEtatOperation(EtatOpperation etatOpperation);
 	
-	List<History> findByUserName(String userName);
+	List<History> findAllByUserNameIgnoreCase(String userName);
 }

@@ -16,7 +16,7 @@ import java.util.NoSuchElementException;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @RestController
-@RequestMapping(path = "/api/history")
+@RequestMapping(path = "/history")
 public class HistoryController {
 	
 	private HistoryService historyService;
@@ -45,13 +45,16 @@ public class HistoryController {
 		return new ResponseEntity<>(historyService.findByEtatOperation(etatOpperation), HttpStatus.OK);
 	}
 	
-	@GetMapping("/user/{userID}")
-	public ResponseEntity<List<History>> getByUserName(@RequestBody String userName) {
+	@GetMapping("/get/user")
+	public ResponseEntity<List<History>> getByUserName(@RequestParam String userName) {
 		try {
                     return new ResponseEntity<>(historyService.findByUserName(userName), HttpStatus.OK);
                 }catch (IllegalArgumentException e){
+			System.out.println(e.getMessage());
                     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                }
+                } catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 }

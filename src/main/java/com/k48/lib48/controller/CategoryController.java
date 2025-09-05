@@ -55,8 +55,10 @@ public class CategoryController {
             
             return new ResponseEntity<>(created, HttpStatus.CREATED);
         }catch (IllegalArgumentException e){
+            System.out.println(e.getMessage());
             throw new IllegalArgumentException(e.getMessage());
         }catch (Exception e){
+            System.out.println(e.getMessage());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
