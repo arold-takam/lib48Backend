@@ -58,11 +58,11 @@ public class ReturnBookController {
 	}
 	
 	@GetMapping(path = "/get/abonne/{gerantID}")
-	public ResponseEntity<ReturnResponseDTO> getReturnByAbonneID(@PathVariable int gerantID, @RequestParam int abonneID){
+	public ResponseEntity<List<ReturnResponseDTO>> getReturnByAbonneID(@PathVariable int gerantID, @RequestParam int abonneID){
 		try {
-			ReturnResponseDTO returnResponseDTO = returnBookService.getReturnByAbonneID(gerantID, abonneID);
+			List <ReturnResponseDTO> returnResponseDTOList = returnBookService.getReturnByAbonneID(gerantID, abonneID);
 			
-			return new ResponseEntity<>(returnResponseDTO, HttpStatus.OK);
+			return new ResponseEntity<>(returnResponseDTOList, HttpStatus.OK);
 		}catch (IllegalArgumentException e){
 			System.out.println(e.getMessage());
 			

@@ -10,12 +10,10 @@ import java.util.Optional;
 
 @Repository
 public interface BorrowBookRepository extends JpaRepository<BorrowBook, Integer> {
-	
-	Optional<BorrowBook> findByAbonne_Id(int abonneID);
-	
-	Optional<BorrowBook>findByGerant_IdAndAbonne_Id(int gerantID, int abonneID);
+
+	Optional<BorrowBook> findByIdAndAbonne_Id(int borrowId, int abonneId);
 	
 	List<BorrowBook>findAllByGerant_Id(int gerantID);
-	
-	List<BorrowBook>findAllByAbonne_Id(int abonneID);
+
+	List<BorrowBook> findAllByAbonne_Id(int abonneId);
 }

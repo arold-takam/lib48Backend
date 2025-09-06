@@ -121,8 +121,13 @@ public class BorrowBookService {
 		
 	}
 	
-	public BorrowResponseDTO getBorrowByID(int gerantID, int abonneID){
-		Optional<BorrowBook>optionalBorrowBook = borrowBookRepository.findByGerant_IdAndAbonne_Id(gerantID, abonneID);
+	public BorrowResponseDTO getBorrowByID(int gerantID,int borrowID, int abonneID){
+
+		//remplacer l'idée du gérant par son mot de passe
+		User gerant = userRepositories.findById(gerantID).orElseThrow(
+				() -> new IllegalArgumentException("There is no Gerant with ID: "+gerantID)
+		);
+		Optional<BorrowBook>optionalBorrowBook = borrowBookRepository.findByIdAndAbonne_Id(borrowID, abonneID);
 		
 		if (optionalBorrowBook.isEmpty()){
 			throw new IllegalArgumentException("No borrow for this user yet");
@@ -169,5 +174,29 @@ public class BorrowBookService {
 		
 		return borrowResponseDTOList;
 	
+	}
+
+	public List<BorrowResponseDTO>getAllBorrowsByAbonne_Id(int abonneID){
+		User abonne = userRepositories.findById(abonneID).orElseThrow(
+				() -> new IllegalArgumentException("There is no User with ID: "+abonneID)
+		);
+		List<BorrowBook> borrowBookList = borrowBookRepository.findAllByAbonne_Id(abonne.getId());
+
+		List<BorrowResponseDTO>borrowResponseDTOList2 = new ArrayList<>();
+
+		for (BorrowBook borrow : borrowBookList){
+			borrowResponseDTOList2.add(
+					new BorrowResponseDTO(
+							borrow.getId(),
+							borrow.getGerant().getName(),
+							borrow.getAbonne().getName(),
+							borrow.getBook().getTitre(),
+							borrow.getDateEmprunt(),
+							borrow.getDelaiEmprunt()
+
+					)
+			);
+		}
+		return borrowResponseDTOList2;
 	}
 }

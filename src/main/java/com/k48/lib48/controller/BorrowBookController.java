@@ -40,16 +40,16 @@ public class BorrowBookController {
 	
 	
 	@GetMapping(path = "/get/{gerantID}")
-	public ResponseEntity<BorrowResponseDTO> getBorrowByID(@PathVariable int gerantID, @RequestParam int abonneID){
+	public ResponseEntity<BorrowResponseDTO> getBorrowByID(@PathVariable int gerantID, @RequestParam int borrowID,@RequestParam int abonneID){
 		try {
-			BorrowResponseDTO borrowResponseDTO = borrowBookService.getBorrowByID(gerantID, abonneID);
+			BorrowResponseDTO borrowResponseDTO = borrowBookService.getBorrowByID(gerantID,borrowID ,abonneID);
 			
 			return new ResponseEntity<>(borrowResponseDTO, HttpStatus.OK);
 		}catch (IllegalArgumentException e){
-			System.out.println(e.getMessage());
+			System.err.println(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}catch (Exception e){
-			System.out.println(e.getMessage());
+			System.err.println(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -69,6 +69,20 @@ public class BorrowBookController {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 		
+	}
+
+	@GetMapping(path = "/get/all/byAbonneID/{abonneId}")
+	public ResponseEntity<List<BorrowResponseDTO>>getAllBorrowsByAbonne_Id(@PathVariable int abonneId){
+		try {
+			List<BorrowResponseDTO> borrowResponseDTOList = borrowBookService.getAllBorrowsByAbonne_Id(abonneId);
+			return new ResponseEntity<>(borrowResponseDTOList, HttpStatus.OK);
+		}catch (IllegalArgumentException e){
+			System.err.println(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}catch (Exception e){
+			System.err.println(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
 	}
 	
 }

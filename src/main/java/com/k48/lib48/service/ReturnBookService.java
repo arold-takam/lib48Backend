@@ -99,21 +99,26 @@ public class ReturnBookService {
 		
 	}
 	
-	public ReturnResponseDTO getReturnByAbonneID(int gerantID, int abonneID) {
+	public List <ReturnResponseDTO> getReturnByAbonneID(int gerantID, int abonneID) {
 		User abonne = userServices.getUserID(abonneID);
 		User gerant = userServices.getUserID(gerantID);
 		
-		ReturnBook returnBook = returnBookRepository.findByBorrowBookConcerned_Abonne(abonne);
+		List<ReturnBook> returnBookList = returnBookRepository.findByBorrowBookConcerned_Abonne(abonne);
 		
-		return new ReturnResponseDTO(
-			returnBook.getId(),
-			gerant.getName(),
-			returnBook.getBorrowBookConcerned().getAbonne().getName(),
-			returnBook.getBorrowBookConcerned().getBook().getTitre(),
-			returnBook.getDateRetour(),
-			returnBook.getNouvelEtatLivre()
-		);
-		
+		List<ReturnResponseDTO> returnResponseDTOList = new ArrayList<>();
+
+		for (ReturnBook returnBook : returnBookList) {
+			returnResponseDTOList.add(new ReturnResponseDTO(
+					returnBook.getId(),
+					gerant.getName(),
+					returnBook.getBorrowBookConcerned().getAbonne().getName(),
+					returnBook.getBorrowBookConcerned().getBook().getTitre(),
+					returnBook.getDateRetour(),
+					returnBook.getNouvelEtatLivre()
+			));
+		}
+		return returnResponseDTOList;
+
 	}
 	
 	public List<ReturnResponseDTO> getAllReturns(int gerantID) {

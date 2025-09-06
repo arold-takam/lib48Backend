@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface ReturnBookRepository extends JpaRepository<ReturnBook, Integer> {
 
-	ReturnBook findByBorrowBookConcerned_Abonne(User abonne);
+	List<ReturnBook> findByBorrowBookConcerned_Abonne(User abonne);
 	
 	List<ReturnBook> findAllByDateRetour(LocalDate dateRetour);
 	
