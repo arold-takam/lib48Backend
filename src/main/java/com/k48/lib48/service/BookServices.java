@@ -154,7 +154,7 @@ public class BookServices {
 	}
 	
 	//-------------------UTILITIES METHODS-----------------------------------------------
-	private String saveFile(MultipartFile file) {
+    public String saveFile(MultipartFile file) {
 		try {
 			String originalFileName = file.getOriginalFilename();
 			String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));

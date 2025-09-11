@@ -1,7 +1,6 @@
-package com.k48.lib48.controller;
+package com.k48.lib48.controllers;
 
 
-import com.k48.lib48.dto.HistoryRequestDTO;
 import com.k48.lib48.models.History;
 import com.k48.lib48.myEnum.EtatOpperation;
 import com.k48.lib48.myEnum.TypeOpperation;
@@ -11,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 

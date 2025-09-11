@@ -1,8 +1,6 @@
-package com.k48.lib48.controller;
+package com.k48.lib48.controllers;
 
-import com.k48.lib48.dto.CarteRequestDTO;
 import com.k48.lib48.dto.UserRequestDTO;
-import com.k48.lib48.dto.UserResponseDTO;
 import com.k48.lib48.models.CarteAbonnement;
 import com.k48.lib48.models.User;
 import com.k48.lib48.myEnum.Role;

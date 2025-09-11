@@ -1,16 +1,13 @@
-package com.k48.lib48.controller;
+package com.k48.lib48.controllers;
 
 import com.k48.lib48.dto.BorrowRequestDTO;
 import com.k48.lib48.dto.BorrowResponseDTO;
-import com.k48.lib48.models.BorrowBook;
-import com.k48.lib48.myEnum.Role;
 import com.k48.lib48.service.BorrowBookService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/borrowBook")

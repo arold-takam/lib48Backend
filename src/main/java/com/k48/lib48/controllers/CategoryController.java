@@ -1,9 +1,8 @@
-package com.k48.lib48.controller;
+package com.k48.lib48.controllers;
 
 import com.k48.lib48.dto.CategoryRequestDTO;
 import com.k48.lib48.models.Category;
 import com.k48.lib48.service.CategoryServices;
-import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +32,7 @@ public class CategoryController {
             Category category = categoryServ.getCategoryById(id);
             return ResponseEntity.ok(category);
         }catch (NoSuchElementException e){
-            throw new NoSuchElementException(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 

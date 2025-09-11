@@ -1,4 +1,4 @@
-package com.k48.lib48.controller;
+package com.k48.lib48.controllers;
 
 import com.k48.lib48.dto.BookRequestDTO;
 import com.k48.lib48.dto.BookUpDateDTO;
@@ -86,7 +86,7 @@ public class BookController {
 	
 	//PUT BOOK-------------------------------------
 	@PutMapping(path = ("/update/{id}"), consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<Book> updateBook(
+	public ResponseEntity<?> updateBook(
 		@PathVariable long id,
 		@RequestParam EtatLivre livreEtat,
 		@RequestParam long idCategory,
@@ -96,18 +96,22 @@ public class BookController {
 			Book book = bookServices.updateBook(id, livreEtat, idCategory, bookUpDateDTO, coverImage);
 			return ResponseEntity.ok(book);
 		} catch (NoSuchElementException e) {
-			throw new NoSuchElementException(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 		}
 	}
 	
 	//DELETE BOOK--------------------------------
 	@DeleteMapping(path = "/{id}")
-	public ResponseEntity<Book> deleteBook(@RequestParam long id) {
+	public ResponseEntity<?> deleteBook(@RequestParam long id) {
 		try {
-			bookServices.deleteBook(id);
+			 bookServices.deleteBook(id);
 			return ResponseEntity.noContent().build();
 		} catch (NoSuchElementException e) {
-			throw new NoSuchElementException(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
 	
