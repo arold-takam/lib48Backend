@@ -1,16 +1,23 @@
 package com.k48.lib48.controller;
 
-import com.k48.lib48.dto.CarteRequestDTO;
+import com.k48.lib48.dto.LoginRequestDTO;
 import com.k48.lib48.dto.UserRequestDTO;
-import com.k48.lib48.dto.UserResponseDTO;
 import com.k48.lib48.models.CarteAbonnement;
 import com.k48.lib48.models.User;
 import com.k48.lib48.myEnum.Role;
 import com.k48.lib48.myEnum.TypeAbonnement;
 import com.k48.lib48.service.CarteAbonnementService;
 import com.k48.lib48.service.UserServices;
+import jakarta.annotation.security.PermitAll;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,24 +29,41 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 public class UserController {
 	private final UserServices userServices;
 	private final CarteAbonnementService carteAbonnementService;
+	private final AuthenticationManager authenticationManager;
 	
-	public UserController(UserServices userServices, CarteAbonnementService carteAbonnementService) {
+	public UserController(UserServices userServices, CarteAbonnementService carteAbonnementService, AuthenticationManager authenticationManager) {
 		this.userServices = userServices;
 		this.carteAbonnementService = carteAbonnementService;
+		this.authenticationManager = authenticationManager;
 	}
 	
 	//	USER MANAGEMENT----------------------------------------------------------------------------------------------------------------------------------------------------------
 	
-	@PostMapping(path = "/create", consumes = APPLICATION_JSON_VALUE)
-	public ResponseEntity<?>createUser(@RequestParam Role roleName, @RequestBody UserRequestDTO userRequestDTO){
+	@PostMapping(path = "/register", consumes = APPLICATION_JSON_VALUE)
+	public ResponseEntity<?>createUser(@RequestParam Role roleName, @Valid @RequestBody UserRequestDTO userRequestDTO){
 		try {
-			
 			userServices.createUser(userRequestDTO, roleName);
 			
 			return new ResponseEntity<>(HttpStatus.CREATED);
 		}catch (IllegalArgumentException e){
 			System.out.println(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
+	}
+	
+	@PostMapping(path = "/login", consumes = APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequestDTO loginRequestDTO){
+		try {
+			Authentication authentication = authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(
+					loginRequestDTO.mail(),
+					loginRequestDTO.password()
+				)
+			);
+			
+			return ResponseEntity.ok("Login successful !");
+		}catch (AuthenticationException e){
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid authentication; try again.");
 		}
 	}
 	
@@ -80,7 +104,7 @@ public class UserController {
 	}
 	
 	@PutMapping(path = "/update/{userID}", consumes = APPLICATION_JSON_VALUE)
-	public ResponseEntity<?>updateUser(@PathVariable int userID, @RequestParam Role roleName, @RequestBody UserRequestDTO userRequestDTO){
+	public ResponseEntity<?>updateUser(@PathVariable int userID, @Valid @RequestParam Role roleName, @RequestBody UserRequestDTO userRequestDTO){
 		try {
 			userServices.updateUser(userID, roleName, userRequestDTO);
 			
@@ -199,4 +223,5 @@ public class UserController {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
+	
 }
