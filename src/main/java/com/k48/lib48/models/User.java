@@ -85,8 +85,9 @@ public class User implements UserDetails {
 	}
 	
 //	----------------FOR SECURITY------------------------------------------------------------------------------------------------------------
+	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return List.of(new SimpleGrantedAuthority(roleName.name()));
+		return List.of(new SimpleGrantedAuthority("ROLE_"+this.getRoleName().name()));
 	}
 	
 	public String getUsername() {

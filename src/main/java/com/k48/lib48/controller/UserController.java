@@ -8,7 +8,6 @@ import com.k48.lib48.myEnum.Role;
 import com.k48.lib48.myEnum.TypeAbonnement;
 import com.k48.lib48.service.CarteAbonnementService;
 import com.k48.lib48.service.UserServices;
-import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -67,6 +65,8 @@ public class UserController {
 		}
 	}
 	
+	
+	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/{userID}", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<User>getUserID(@PathVariable int userID){
 		try {
@@ -110,7 +110,7 @@ public class UserController {
 			
 			return new ResponseEntity<>(HttpStatus.OK);
 		}catch (IllegalArgumentException e){
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
 		}catch (Exception e){
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}

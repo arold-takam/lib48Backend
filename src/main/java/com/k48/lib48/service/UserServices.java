@@ -88,7 +88,7 @@ public class UserServices {
 		
 		User existingUser = userRepositories.findByMailIgnoreCase(userRequestDTO.mail());
 		
-		if (existingUser != null) {
+		if (existingUser != null && existingUser.getId() != userID ) {
 			throw new IllegalArgumentException("Email already in use.");
 		}
 		

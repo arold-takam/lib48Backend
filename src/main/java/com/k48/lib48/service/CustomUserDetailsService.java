@@ -2,10 +2,15 @@ package com.k48.lib48.service;
 
 import com.k48.lib48.models.User;
 import com.k48.lib48.repository.UserRepositories;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.List;
 
 
 @Service("customUserDetailsService")

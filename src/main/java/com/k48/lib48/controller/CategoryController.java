@@ -21,32 +21,9 @@ public class CategoryController {
     public CategoryController(CategoryServices categoryServ) {
         this.categoryServ = categoryServ;
     }
-
-    @GetMapping(path = "/get/All", produces= APPLICATION_JSON_VALUE)
-    public List<Category> getAllCategories() {
-        return categoryServ.getAllCategories();
-    }
-
-    @GetMapping(path = "/get/ById/{id}", produces= APPLICATION_JSON_VALUE)
-    public ResponseEntity<Category> getCategoryId(@PathVariable long id) {
-        try {
-            Category category = categoryServ.getCategoryById(id);
-            return ResponseEntity.ok(category);
-        }catch (NoSuchElementException e){
-            throw new NoSuchElementException(e.getMessage());
-        }
-    }
-
-    @GetMapping(path = "/get/ByName", produces= APPLICATION_JSON_VALUE)
-    public ResponseEntity<Category> getCategoryByName(@RequestParam String name) {
-        try {
-            Category category = categoryServ.getCategoryByName(name);
-            return ResponseEntity.ok(category);
-        }catch (NoSuchElementException e){
-            throw new NoSuchElementException(e.getMessage());
-        }
-    }
-
+    
+//    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    
     @PostMapping(path = "/create", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> createCategory(@RequestBody CategoryRequestDTO categoryRequestDTO) {
         try {
@@ -63,7 +40,32 @@ public class CategoryController {
         }
     }
 
-    @PutMapping(path = "/{id}" , consumes = APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/get/All", produces= APPLICATION_JSON_VALUE)
+    public List<Category> getAllCategories() {
+        return categoryServ.getAllCategories();
+    }
+
+    @GetMapping(path = "/get/byID/{id}", produces= APPLICATION_JSON_VALUE)
+    public ResponseEntity<Category> getCategoryId(@PathVariable long id) {
+        try {
+            Category category = categoryServ.getCategoryById(id);
+            return ResponseEntity.ok(category);
+        }catch (NoSuchElementException e){
+            throw new NoSuchElementException(e.getMessage());
+        }
+    }
+
+    @GetMapping(path = "/get/byName", produces= APPLICATION_JSON_VALUE)
+    public ResponseEntity<Category> getCategoryByName(@RequestParam String name) {
+        try {
+            Category category = categoryServ.getCategoryByName(name);
+            return ResponseEntity.ok(category);
+        }catch (NoSuchElementException e){
+            throw new NoSuchElementException(e.getMessage());
+        }
+    }
+
+    @PutMapping(path = "/update/{id}" , consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> updateCategory(@PathVariable long id,@RequestBody CategoryRequestDTO  categoryRequestDTO) {
         try {
             Category updated = categoryServ.updateCategory(id , categoryRequestDTO);
@@ -73,7 +75,7 @@ public class CategoryController {
         }
     }
 
-    @DeleteMapping(path = "/{id}")
+    @DeleteMapping(path = "/delete/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable long id) {
         try {
             categoryServ.deleteCategory(id);

@@ -17,7 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 	
 	private final UserDetailsService userDetailsService;
@@ -36,7 +36,9 @@ public class SecurityConfig {
 				                      auth.requestMatchers("/user/login", "/user/register")
 					                      .permitAll()
 					                      .anyRequest().authenticated()
-				                      ).build();
+							)
+			       .httpBasic(httpBasic->{})
+			       .build();
 	}
 	
 	@Bean
