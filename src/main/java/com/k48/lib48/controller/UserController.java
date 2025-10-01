@@ -78,6 +78,7 @@ public class UserController {
 		}
 	}
 	
+	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/byRole/{role}", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<User>getUserRoleAndName(@PathVariable Role role, @RequestParam String name){
 		try {
@@ -89,6 +90,7 @@ public class UserController {
 		}
 	}
 	
+	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<User>>getAllUsers(){
 		List<User>userList = userServices.getAllUsers();
@@ -96,6 +98,7 @@ public class UserController {
 		return new ResponseEntity<>(userList, HttpStatus.OK);
 	}
 	
+	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/all/{role}", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<User>>getAllUsersRole(@PathVariable Role role){
 		List<User>userList = userServices.getAllUsersRole(role);
@@ -110,8 +113,10 @@ public class UserController {
 			
 			return new ResponseEntity<>(HttpStatus.OK);
 		}catch (IllegalArgumentException e){
+			System.out.println(e.getMessage());
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
 		}catch (Exception e){
+			System.out.println(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -133,12 +138,10 @@ public class UserController {
 		}
 	}
 	
-	
-	
 //	CARD MANAGEMENT-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	//	Abonne CARTEaBONNEMENT MANAGEMENT--------------------------------------------------------------------------------------------------------------
-	
+	@PreAuthorize("hasRole('ABONNE')")
 	@PostMapping(path = "/create/card/{abonneID}")
 	public ResponseEntity<?>createCard(@PathVariable int abonneID, @RequestParam TypeAbonnement typeAbonnement){
 		try {
@@ -146,12 +149,15 @@ public class UserController {
 			
 			return new ResponseEntity<>(HttpStatus.OK);
 		}catch (IllegalArgumentException e){
+			System.out.println(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}catch (Exception e){
+			System.out.println(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
 	
+	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/card/{abonneID}", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<CarteAbonnement>getCardID(@PathVariable int abonneID){
 		try {
@@ -165,12 +171,13 @@ public class UserController {
 		}
 	}
 	
-	@PutMapping(path = "/subscribe/card/byAbonne/{abonneID}")
-	public ResponseEntity<?>subscribe(@PathVariable int abonneID, @RequestParam TypeAbonnement typeAbonnement){
+	@PreAuthorize("hasRole('GERANT')")
+	@GetMapping(path = "/get/card/byGerant/{gerantID}")
+	public ResponseEntity<List<CarteAbonnement>>getAllCards(@PathVariable int gerantID){
 		try {
-			carteAbonnementService.subscribe(abonneID, typeAbonnement);
+			List<CarteAbonnement>carteAbonnementList = carteAbonnementService.getAllCards(gerantID);
 			
-			return new ResponseEntity<>(HttpStatus.OK);
+			return new ResponseEntity<>(carteAbonnementList, HttpStatus.OK);
 		}catch (IllegalArgumentException e){
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}catch (Exception e){
@@ -178,6 +185,25 @@ public class UserController {
 		}
 	}
 	
+	@PreAuthorize("hasRole('ABONNE')")
+	@PutMapping(path = "/subscribe/card/byAbonne/{abonneID}")
+	public ResponseEntity<?>subscribe(@PathVariable int abonneID, @RequestParam TypeAbonnement typeAbonnement){
+		try {
+			carteAbonnementService.subscribe(abonneID, typeAbonnement);
+			
+			return new ResponseEntity<>(HttpStatus.OK);
+		}catch (IllegalArgumentException e){
+			System.out.println(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}catch (AuthenticationException e){
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+		} catch (Exception e){
+			System.out.println(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	@PreAuthorize("hasRole('ABONNE')")
 	@DeleteMapping(path = "/delete/card/{abonneID}")
 	public ResponseEntity<?>deleteCard(@PathVariable int abonneID){
 		try {
@@ -196,6 +222,7 @@ public class UserController {
 	
 	
 //	Gerant CardAbonnement Management-------------------------------------------------------------------------------
+	@PreAuthorize("hasRole('GERANT')")
 	@PutMapping(path = "/revoque/card/{abonneID}")
 	public ResponseEntity<?>revoqueCard(@PathVariable int abonneID, @RequestParam int gerantID){
 		try {
@@ -207,19 +234,6 @@ public class UserController {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}catch (Exception e){
 			System.out.println(e.getMessage());
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-	}
-	
-	@GetMapping(path = "/get/card/byGerant/{gerantID}")
-	public ResponseEntity<List<CarteAbonnement>>getAllCards(@PathVariable int gerantID){
-		try {
-			List<CarteAbonnement>carteAbonnementList = carteAbonnementService.getAllCards(gerantID);
-			
-			return new ResponseEntity<>(carteAbonnementList, HttpStatus.OK);
-		}catch (IllegalArgumentException e){
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}catch (Exception e){
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}

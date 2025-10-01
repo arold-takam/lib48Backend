@@ -7,6 +7,8 @@ import com.k48.lib48.myEnum.EtatOpperation;
 import com.k48.lib48.myEnum.Role;
 import com.k48.lib48.myEnum.TypeOpperation;
 import com.k48.lib48.repository.UserRepositories;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -62,7 +64,10 @@ public class UserServices {
 	}
 	
 	public User getUserID(int userID){
-		return userRepositories.findById(userID).orElseThrow(()->new IllegalArgumentException("No user found at the ID: "+userID));
+		User user = userRepositories.findById(userID).orElseThrow(()->new IllegalArgumentException("No user found at the ID: "+userID));
+	
+		
+		return user;
 	}
 	
 	public User getUserRoleAndName(String name, Role role){
@@ -87,6 +92,12 @@ public class UserServices {
 		User user= userRepositories.findById(userID).orElseThrow(()-> new IllegalArgumentException("User with the ID: "+userID+" not found"));
 		
 		User existingUser = userRepositories.findByMailIgnoreCase(userRequestDTO.mail());
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		User aunthenticatedUser = (User) authentication.getPrincipal();
+		if (!aunthenticatedUser.getMail().equalsIgnoreCase(user.getMail())){
+			throw new IllegalArgumentException("You are not authorized to update this user.");
+		}
 		
 		if (existingUser != null && existingUser.getId() != userID ) {
 			throw new IllegalArgumentException("Email already in use.");
@@ -114,6 +125,12 @@ public class UserServices {
 	
 	public boolean deleteUser(int userID){
 		User user= userRepositories.findById(userID).orElseThrow(()-> new IllegalArgumentException("User with the ID: "+userID+" not found"));
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		User aunthenticatedUser = (User) authentication.getPrincipal();
+		if (!aunthenticatedUser.getMail().equalsIgnoreCase(user.getMail())){
+			throw new IllegalArgumentException("You are not authorized to delete this user.");
+		}
 		
 		userRepositories.deleteById(user.getId());
 		

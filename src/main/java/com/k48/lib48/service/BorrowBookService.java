@@ -11,6 +11,8 @@ import com.k48.lib48.myEnum.TypeOpperation;
 import com.k48.lib48.repository.BookRespositories;
 import com.k48.lib48.repository.BorrowBookRepository;
 import com.k48.lib48.repository.UserRepositories;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -54,6 +56,12 @@ public class BorrowBookService {
 		}
 		
 		User abonne = abonneOptional.get();
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		User authenticatedUser = (User) authentication.getPrincipal();
+		if (authenticatedUser.getId() != abonne.getId()) {
+			throw new IllegalArgumentException("You are not authorized to borrow this book.");
+		}
 		
 		Optional<Book> livreAEmprunterOpt = bookRespositories.findById(borrowRequestDTO.bookID());
 		if (livreAEmprunterOpt.isEmpty()) {
@@ -150,8 +158,10 @@ public class BorrowBookService {
 	}
 	
 	public List<BorrowResponseDTO>getAllBorrows(int gerantID){
+		
+		User gerant = userRepositories.findById(gerantID).orElseThrow(() -> new IllegalArgumentException("Gerant not found with the ID: " + gerantID));
 	
-		if (userRepositories.existsById(gerantID) && userRepositories.findById(gerantID).get().getRoleName() != Role.GERANT){
+		if (gerant.getRoleName() != Role.GERANT){
 			throw new IllegalArgumentException("This operation is only for Gerant.");
 		}
 		

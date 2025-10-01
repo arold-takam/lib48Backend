@@ -42,7 +42,7 @@ public class CategoryServices {
 	}
 	
 	public Category getCategoryById(long categoryId) {
-		return categoryRepo.findById(categoryId).orElseThrow(() -> new IllegalArgumentException("Category not found"));
+		return categoryRepo.findById(categoryId).orElseThrow(() -> new NoSuchElementException("Category not found"));
 	}
 	
 	public Category createCategory(CategoryRequestDTO categoryRequestDTO) {

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +30,7 @@ public class BookController {
 	
 //	----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //POST BOOK----------------------------------
+	@PreAuthorize("hasRole('GERANT')")
 	@PostMapping(path = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(summary = "Créer un nouveau livre avec image")
 	public ResponseEntity<?> createBook(
@@ -49,11 +51,13 @@ public class BookController {
 	}
 	
 	// GET BOOK ------------------------------------------
+	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/All", produces = APPLICATION_JSON_VALUE)
 	public List<Book> getAllBooks() {
 		return bookServices.getAllBooks();
 	}
 	
+	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/byID/{id}", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<Book> getBookById(@PathVariable long id) {
 		try {
@@ -64,6 +68,7 @@ public class BookController {
 		}
 	}
 	
+	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/byTitle", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<Book> getBookByTitle(@RequestParam String title) {
 		try {
@@ -75,6 +80,7 @@ public class BookController {
 	}
 	
 	
+	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/byCategory", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<Book>> getBookByCategorie(@RequestParam String categorie) {
 		try {
@@ -86,6 +92,7 @@ public class BookController {
 	}
 	
 	//PUT BOOK-------------------------------------
+	@PreAuthorize("hasRole('GERANT')")
 	@PutMapping(path = ("/update/{id}"), consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<Book> updateBook(
 		@PathVariable long id,
@@ -102,6 +109,7 @@ public class BookController {
 	}
 	
 	//DELETE BOOK--------------------------------
+	@PreAuthorize("hasRole('GERANT')")
 	@DeleteMapping(path = "delete/{id}")
 	public ResponseEntity<Book> deleteBook(@PathVariable long id) {
 		try {

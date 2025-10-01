@@ -6,8 +6,8 @@ import com.k48.lib48.myEnum.EtatLivre;
 import com.k48.lib48.service.ReturnBookService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -21,7 +21,7 @@ public class ReturnBookController {
 	}
 
 //	RETURNING MANAGEMENT-----------------------------------------------------------------------------------------------------------------------------------------------
-	
+	@PreAuthorize("hasRole('GERANT')")
 	@PostMapping(path = "/create/{idReturnGerantID}")
 	public ResponseEntity<?> makeReturn (@PathVariable int idReturnGerantID, @RequestParam EtatLivre etatLivre, @RequestBody ReturnRequestDTO returnRequestDTO){
 		try {
@@ -40,6 +40,7 @@ public class ReturnBookController {
 		}
 	}
 	
+	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/{gerantID}")
 	public ResponseEntity<ReturnResponseDTO> getReturnByID(@PathVariable int gerantID, @RequestParam int returnID){
 		try {
@@ -57,7 +58,8 @@ public class ReturnBookController {
 		}
 	}
 	
-	@GetMapping(path = "/get/abonne/{gerantID}")
+	@PreAuthorize("hasRole('GERANT')")
+	@GetMapping(path = "/get/byAbonneID/{gerantID}")
 	public ResponseEntity<List<ReturnResponseDTO>> getReturnByAbonneID(@PathVariable int gerantID, @RequestParam int abonneID){
 		try {
 			List <ReturnResponseDTO> returnResponseDTOList = returnBookService.getReturnByAbonneID(gerantID, abonneID);
@@ -74,12 +76,14 @@ public class ReturnBookController {
 		}
 	}
 	
+	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/all/{gerantID}")
 	public ResponseEntity<List<ReturnResponseDTO>> getAllReturns(@PathVariable int gerantID){
 		
 		return new ResponseEntity<>(returnBookService.getAllReturns(gerantID), HttpStatus.OK);
 	}
 	
+	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/all/byDate/{gerantID}")
 	public ResponseEntity<List<ReturnResponseDTO>> getAllReturnsByDate(@PathVariable int gerantID, @RequestParam LocalDate dateRetour){
 		

@@ -9,6 +9,8 @@ import com.k48.lib48.myEnum.EtatOpperation;
 import com.k48.lib48.myEnum.Role;
 import com.k48.lib48.myEnum.TypeOpperation;
 import com.k48.lib48.repository.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -41,6 +43,13 @@ public class ReturnBookService {
 //	RETURNING MANAGEMENT-----------------------------------------------------------------------------------------------------------------------------------------------
 	public void makeReturn(int idGerant, EtatLivre nouvelEtatLivre, ReturnRequestDTO dto) {
 		User gerant = getGerant(idGerant);
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		User aunthenticatedUser = (User) authentication.getPrincipal();
+		if (aunthenticatedUser.getId() != gerant.getId()) {
+			throw new IllegalArgumentException("You are not authorized to return this book.");
+		}
+		
 		BorrowBook borrowBook = getBorrow(dto.borrowBookID());
 		checkAlreadyReturned(borrowBook);
 		
@@ -124,6 +133,10 @@ public class ReturnBookService {
 	public List<ReturnResponseDTO> getAllReturns(int gerantID) {
 		User gerant = userServices.getUserID(gerantID);
 		
+		if (!gerant.getRoleName().equals(Role.GERANT)){
+			throw new IllegalArgumentException("This operation is only for Gerant.");
+		}
+		
 		List<ReturnBook> returnBookList = returnBookRepository.findAll();
 		
 		List<ReturnResponseDTO> returnResponseDTOList = new ArrayList<>();
@@ -145,6 +158,10 @@ public class ReturnBookService {
 	
 	public List<ReturnResponseDTO> getAllReturnsByDate(int gerantID, LocalDate dateRetour) {
 		User gerant = userServices.getUserID(gerantID);
+		
+		if (!gerant.getRoleName().equals(Role.GERANT)){
+			throw new IllegalArgumentException("This operation is only for Gerant.");
+		}
 		
 		List<ReturnBook> returnBookList = returnBookRepository.findAllByDateRetour(dateRetour);
 		

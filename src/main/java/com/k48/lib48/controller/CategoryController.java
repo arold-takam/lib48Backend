@@ -6,6 +6,7 @@ import com.k48.lib48.service.CategoryServices;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class CategoryController {
     
 //    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     
+    @PreAuthorize("hasRole('GERANT')")
     @PostMapping(path = "/create", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> createCategory(@RequestBody CategoryRequestDTO categoryRequestDTO) {
         try {
@@ -40,21 +42,25 @@ public class CategoryController {
         }
     }
 
+    @PreAuthorize("hasRole('GERANT')")
     @GetMapping(path = "/get/All", produces= APPLICATION_JSON_VALUE)
     public List<Category> getAllCategories() {
         return categoryServ.getAllCategories();
     }
 
+    @PreAuthorize("hasRole('GERANT')")
     @GetMapping(path = "/get/byID/{id}", produces= APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> getCategoryId(@PathVariable long id) {
         try {
             Category category = categoryServ.getCategoryById(id);
             return ResponseEntity.ok(category);
         }catch (NoSuchElementException e){
-            throw new NoSuchElementException(e.getMessage());
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
+    @PreAuthorize("hasRole('GERANT')")
     @GetMapping(path = "/get/byName", produces= APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> getCategoryByName(@RequestParam String name) {
         try {
@@ -65,6 +71,7 @@ public class CategoryController {
         }
     }
 
+    @PreAuthorize("hasRole('GERANT')")
     @PutMapping(path = "/update/{id}" , consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> updateCategory(@PathVariable long id,@RequestBody CategoryRequestDTO  categoryRequestDTO) {
         try {
@@ -75,6 +82,7 @@ public class CategoryController {
         }
     }
 
+    @PreAuthorize("hasRole('GERANT')")
     @DeleteMapping(path = "/delete/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable long id) {
         try {

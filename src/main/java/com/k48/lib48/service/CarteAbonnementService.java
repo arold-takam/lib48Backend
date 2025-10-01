@@ -9,6 +9,8 @@ import com.k48.lib48.myEnum.TypeAbonnement;
 import com.k48.lib48.myEnum.TypeOpperation;
 import com.k48.lib48.repository.CarteAbonnementRepository;
 import com.k48.lib48.repository.UserRepositories;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,6 +35,12 @@ public class CarteAbonnementService {
 	
 	public void createCarte(int abonneID, TypeAbonnement typeAbonnement) {
 		User abonne = userRepositories.findById(abonneID).orElseThrow(() -> new IllegalArgumentException("Abonne not found with the ID: " + abonneID));
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		User authenticatedUser = (User) authentication.getPrincipal();
+		if (!authenticatedUser.getMail().equalsIgnoreCase(abonne.getMail())) {
+			throw new IllegalArgumentException("You are not authorized to update this user.");
+		}
 		
 		if (abonne.getRoleName().equals(Role.GERANT)) {
 			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: " + null, TypeOpperation.ABONNEMENT, EtatOpperation.ECHEC, "Abonnement rate.");
@@ -87,6 +95,12 @@ public class CarteAbonnementService {
 	public void subscribe(int abonneID, TypeAbonnement typeAbonnement) {
 		User abonne = userRepositories.findById(abonneID).orElseThrow(() -> new IllegalArgumentException("Abonne not found with the ID: " + abonneID));
 		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		User authenticatedUser = (User) authentication.getPrincipal();
+		if (!authenticatedUser.getMail().equalsIgnoreCase(abonne.getMail())) {
+			throw new IllegalArgumentException("You are not authorized to update this user.");
+		}
+		
 		if (abonne.getRoleName().equals(Role.GERANT)) {
 			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: " + null, TypeOpperation.REABONNEMENT, EtatOpperation.ECHEC, "Reabonnement rate.");
 			historyService.addToHistory(historyRequestDTO);
@@ -119,6 +133,12 @@ public class CarteAbonnementService {
 	public boolean deleteCard(int abonneID) {
 		User abonne = userRepositories.findById(abonneID).orElseThrow(() -> new IllegalArgumentException("Abonne not found with the ID: " + abonneID));
 		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		User authenticatedUser = (User) authentication.getPrincipal();
+		if (!authenticatedUser.getMail().equalsIgnoreCase(abonne.getMail())) {
+			throw new IllegalArgumentException("You are not authorized to update this user.");
+		}
+		
 		if (abonne.getRoleName().equals(Role.GERANT)) {
 			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: " + null, TypeOpperation.SURPESSION_CARTE, EtatOpperation.ECHEC, "Carte non supprimee.");
 			historyService.addToHistory(historyRequestDTO);
@@ -146,6 +166,12 @@ public class CarteAbonnementService {
 	//	Gerant CardAbonnement Management-------------------------------------------------------------------------------
 	public void revoqueCard(int abonneID, int gerantID) {
 		User gerant = userRepositories.findById(gerantID).orElseThrow(() -> new IllegalArgumentException("Gerant not found with the ID: " + gerantID));
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		User aunthenticatedUser = (User) authentication.getPrincipal();
+		if (aunthenticatedUser.getId() != gerant.getId()) {
+			 throw new IllegalArgumentException("You are not authorized to update this user.");
+		}
 		
 		if (gerant.getRoleName().equals(Role.ABONNE)) {
 			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), "Book ID: " + null, TypeOpperation.SUSPENSION_CARTE, EtatOpperation.ECHEC, "Carte non suspendue.");
