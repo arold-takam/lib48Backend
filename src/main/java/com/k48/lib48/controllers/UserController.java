@@ -99,7 +99,11 @@ public class UserController {
 			
 			return new ResponseEntity<>(user, HttpStatus.OK);
 		}catch (IllegalArgumentException e){
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}catch (Exception e){
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -135,6 +139,7 @@ public class UserController {
 	}
 	
 	@DeleteMapping(path = "/delete/{userID}")
+	@PreAuthorize("hasRole('GERANT') or authentication.principal.id == #userID")
 	public ResponseEntity<Void>deleteUser(@PathVariable int userID){
 		try {
 			boolean delete = userServices.deleteUser(userID);
@@ -148,7 +153,6 @@ public class UserController {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}catch (Exception e){
 			log.error(e.getMessage());
-			System.out.println(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}

@@ -65,10 +65,10 @@ public class ReturnBookController {
 			return new ResponseEntity<>(returnResponseDTOList, HttpStatus.OK);
 		}catch (IllegalArgumentException e){
 			log.error(e.getMessage());
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}catch (Exception e){
 			log.error(e.getMessage());
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	

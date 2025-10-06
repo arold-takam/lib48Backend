@@ -6,11 +6,16 @@ import com.k48.lib48.models.User;
 import com.k48.lib48.myEnum.EtatOpperation;
 import com.k48.lib48.myEnum.Role;
 import com.k48.lib48.myEnum.TypeOpperation;
+import com.k48.lib48.repository.BorrowBookRepository;
+import com.k48.lib48.repository.ReturnBookRepository;
 import com.k48.lib48.repository.UserRepositories;
+import jakarta.transaction.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @Service
@@ -18,11 +23,15 @@ public class UserServices {
 	private final UserRepositories userRepositories;
 	private final HistoryService historyService;
 	private final PasswordEncoder passwordEncoder;
+	private final BorrowBookRepository borrowBookRepository;
+	private final ReturnBookRepository returnBookRepository;
 	
-	public UserServices(UserRepositories userRepositories, HistoryService historyService, PasswordEncoder passwordEncoder) {
+	public UserServices(UserRepositories userRepositories, HistoryService historyService, PasswordEncoder passwordEncoder, BorrowBookRepository borrowBookRepository, ReturnBookRepository returnBookRepository) {
 		this.userRepositories = userRepositories;
 		this.historyService = historyService;
 		this.passwordEncoder = passwordEncoder;
+		this.borrowBookRepository = borrowBookRepository;
+		this.returnBookRepository = returnBookRepository;
 	}
 	
 	//	USER MANAGEMENT----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -32,6 +41,16 @@ public class UserServices {
 			    userRequestDTO.name() == null || userRequestDTO.name().isBlank() ||
 			    userRequestDTO.mail() == null || userRequestDTO.mail().isBlank() ||
 			    userRequestDTO.password() == null || userRequestDTO.password().isBlank()) {
+			
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				userRequestDTO.name(),
+				"N/A",
+				TypeOpperation.INSCRIPTION,
+				EtatOpperation.ECHEC,
+				"Utilisateur non enregistre."
+			);
+			historyService.addToHistory(historyRequestDTO);
+			
 			throw new IllegalArgumentException("Invalid user data.");
 		}
 		
@@ -39,6 +58,14 @@ public class UserServices {
 		
 		User existingUser = userRepositories.findByMailIgnoreCase(userRequestDTO.mail());
 		if (existingUser != null) {
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				userRequestDTO.name(),
+				"N/A",
+				TypeOpperation.INSCRIPTION,
+				EtatOpperation.ECHEC,
+				"Utilisateur non enregistre."
+			);
+			historyService.addToHistory(historyRequestDTO);
 			throw new IllegalArgumentException("Email already in use.");
 		}
 		
@@ -96,10 +123,26 @@ public class UserServices {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		User aunthenticatedUser = (User) authentication.getPrincipal();
 		if (!aunthenticatedUser.getMail().equalsIgnoreCase(user.getMail())){
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				user.getName(),
+				"Book ID: N/A",
+				TypeOpperation.MODIFICATION_COMPTE,
+				EtatOpperation.ECHEC,
+				"Utilisateur non mis a jour.");
+			historyService.addToHistory(historyRequestDTO);
+			
 			throw new IllegalArgumentException("You are not authorized to update this user.");
 		}
 		
 		if (existingUser != null && existingUser.getId() != userID ) {
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				user.getName(),
+				"Book ID: N/A",
+				TypeOpperation.MODIFICATION_COMPTE,
+				EtatOpperation.ECHEC,
+				"Utilisateur non mis a jour.");
+			historyService.addToHistory(historyRequestDTO);
+			
 			throw new IllegalArgumentException("Email already in use.");
 		}
 		
@@ -123,24 +166,25 @@ public class UserServices {
 		historyService.addToHistory(historyRequestDTO);
 	}
 	
+	@Transactional
 	public boolean deleteUser(int userID){
 		User user= userRepositories.findById(userID).orElseThrow(()-> new IllegalArgumentException("User with the ID: "+userID+" not found"));
-		
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		User aunthenticatedUser = (User) authentication.getPrincipal();
-		if (!aunthenticatedUser.getMail().equalsIgnoreCase(user.getMail())){
-			throw new IllegalArgumentException("You are not authorized to delete this user.");
-		}
-		
-		userRepositories.deleteById(user.getId());
 		
 		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
 			user.getName(),
 			"Book ID:  N/A",
 			TypeOpperation.SUPRESSION_COMPTE,
 			EtatOpperation.SUCCES,
-			"Utilisateur  supprime.");
+			"Utilisateur  supprime."
+		);
 		historyService.addToHistory(historyRequestDTO);
+		
+//		DELETION PROCESS TO IMPROVE IN THE V2)--------------------------------------------
+		returnBookRepository.deleteAllByBorrowBookConcerned_Abonne(user);
+		borrowBookRepository.deleteAllByAbonne(user);
+//		-------------------------------------------------------------------------------------------------------------
+		
+		userRepositories.delete(user);
 		
 		return true;
 	}

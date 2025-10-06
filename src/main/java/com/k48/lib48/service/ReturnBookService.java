@@ -42,31 +42,53 @@ public class ReturnBookService {
 
 //	RETURNING MANAGEMENT-----------------------------------------------------------------------------------------------------------------------------------------------
 	public void makeReturn(int idGerant, EtatLivre nouvelEtatLivre, ReturnRequestDTO dto) {
-		User gerant = getGerant(idGerant);
-		
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		User aunthenticatedUser = (User) authentication.getPrincipal();
-		if (aunthenticatedUser.getId() != gerant.getId()) {
-			throw new IllegalArgumentException("You are not authorized to return this book.");
-		}
-		
 		BorrowBook borrowBook = getBorrow(dto.borrowBookID());
 		checkAlreadyReturned(borrowBook);
 		
 		User abonne = getAbonne(borrowBook.getAbonne().getId());
 		CarteAbonnement carte = getCarte(abonne);
-		Book book = borrowBook.getBook();
-		EtatLivre ancienEtat = book.getEtatLivre();
 		
+		Book book = borrowBook.getBook();
+		
+		User gerant = getGerant(idGerant);
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		User aunthenticatedUser = (User) authentication.getPrincipal();
+		if (aunthenticatedUser.getId() != gerant.getId()) {
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID: " + book.getId(),
+				TypeOpperation.RETOUR_LIVRE,
+				EtatOpperation.ECHEC,
+				"Livre non retourne."
+			);
+			historyService.addToHistory(historyRequestDTO);
+			
+			throw new IllegalArgumentException("You are not authorized to return this book.");
+		}
+		
+		EtatLivre ancienEtat = book.getEtatLivre();
 		if (ancienEtat.equals(EtatLivre.MAUVAIS_ETAT) && !nouvelEtatLivre.equals(EtatLivre.MAUVAIS_ETAT)) {
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: " + null, TypeOpperation.RETOUR_LIVRE, EtatOpperation.ECHEC, "Livre non retourne.");
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID: " + book.getId(),
+				TypeOpperation.RETOUR_LIVRE,
+				EtatOpperation.ECHEC,
+				"Livre non retourne."
+			);
 			historyService.addToHistory(historyRequestDTO);
 			
 			throw new IllegalArgumentException("The book is already in bad condition and can't be returned in good condition.");
 		}
 		
 		if (ancienEtat.equals(EtatLivre.BON_ETAT) && nouvelEtatLivre.equals(EtatLivre.NEUF)) {
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: " + null, TypeOpperation.RETOUR_LIVRE, EtatOpperation.ECHEC, "Livre non retourne.");
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID: " + book.getId(),
+				TypeOpperation.RETOUR_LIVRE,
+				EtatOpperation.ECHEC,
+				"Livre non retourne."
+			);
 			historyService.addToHistory(historyRequestDTO);
 			
 			throw new IllegalArgumentException("The book is already in good condition and can't be returned in best condition.");
@@ -80,7 +102,13 @@ public class ReturnBookService {
 		
 		ReturnBook retour = buildReturnBook(gerant, borrowBook, nouvelEtatLivre, dto.dateRetour());
 		
-		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: " + null, TypeOpperation.RETOUR_LIVRE, EtatOpperation.SUCCES, "Livre retourne.");
+		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+			abonne.getName(),
+			"Book ID: " + book.getTitre(),
+			TypeOpperation.RETOUR_LIVRE,
+			EtatOpperation.SUCCES,
+			"Livre retourne."
+		);
 		historyService.addToHistory(historyRequestDTO);
 		
 		returnBookRepository.save(retour);

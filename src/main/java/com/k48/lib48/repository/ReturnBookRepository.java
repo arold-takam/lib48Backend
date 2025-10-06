@@ -18,5 +18,6 @@ public interface ReturnBookRepository extends JpaRepository<ReturnBook, Integer>
 	List<ReturnBook> findAllByDateRetour(LocalDate dateRetour);
 	
 	Optional<ReturnBook> findByBorrowBookConcerned(BorrowBook borrowBookConcerned);
-
+	
+	void deleteAllByBorrowBookConcerned_Abonne(User abonne);
 }

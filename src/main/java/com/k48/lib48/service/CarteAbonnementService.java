@@ -39,18 +39,36 @@ public class CarteAbonnementService {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		User authenticatedUser = (User) authentication.getPrincipal();
 		if (!authenticatedUser.getMail().equalsIgnoreCase(abonne.getMail())) {
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID:  N/A",
+				TypeOpperation.ABONNEMENT, EtatOpperation.ECHEC,
+				"Abonnement ratee."
+			);
+			historyService.addToHistory(historyRequestDTO);
+			
 			throw new IllegalArgumentException("You are not authorized to update this user.");
 		}
 		
 		if (abonne.getRoleName().equals(Role.GERANT)) {
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: " + null, TypeOpperation.ABONNEMENT, EtatOpperation.ECHEC, "Abonnement rate.");
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID:  N/A",
+				TypeOpperation.ABONNEMENT, EtatOpperation.ECHEC,
+				"Abonnement ratee."
+			);
 			historyService.addToHistory(historyRequestDTO);
 			
 			throw new IllegalArgumentException("This operation is only for abonne.");
 		}
 		
 		if (abonne.getCarteAbonnement() != null) {
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: " + null, TypeOpperation.ABONNEMENT, EtatOpperation.ECHEC, "Abonnement rate.");
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID:  N/A",
+				TypeOpperation.ABONNEMENT, EtatOpperation.ECHEC,
+				"Abonnement ratee."
+			);
 			historyService.addToHistory(historyRequestDTO);
 			
 			throw new IllegalArgumentException(abonne.getName() + " has already a card; use it.");
@@ -73,7 +91,12 @@ public class CarteAbonnementService {
 		
 		abonne.setCarteAbonnement(carteAbonnement);
 		
-		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: " + null, TypeOpperation.ABONNEMENT, EtatOpperation.SUCCES, "Abonnement reussi.");
+		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+			abonne.getName(),
+			"Book ID:  N/A",
+			TypeOpperation.ABONNEMENT, EtatOpperation.SUCCES,
+			"Abonnement reussi."
+		);
 		historyService.addToHistory(historyRequestDTO);
 		
 		userRepositories.save(abonne);
@@ -95,14 +118,42 @@ public class CarteAbonnementService {
 	public void subscribe(int abonneID, TypeAbonnement typeAbonnement) {
 		User abonne = userRepositories.findById(abonneID).orElseThrow(() -> new IllegalArgumentException("Abonne not found with the ID: " + abonneID));
 		
+		if (!typeAbonnement.equals(STANDART) && !typeAbonnement.equals(CUSTUM) && !typeAbonnement.equals(VIP)){
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID:  N/A",
+				TypeOpperation.REABONNEMENT,
+				EtatOpperation.ECHEC,
+				"Reabonnement rate."
+			);
+			historyService.addToHistory(historyRequestDTO);
+			
+			throw new IllegalArgumentException("This type of subscribe doesn't exist.");
+		}
+		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		User authenticatedUser = (User) authentication.getPrincipal();
 		if (!authenticatedUser.getMail().equalsIgnoreCase(abonne.getMail())) {
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID:  N/A",
+				TypeOpperation.REABONNEMENT,
+				EtatOpperation.ECHEC,
+				"Reabonnement rate."
+			);
+			historyService.addToHistory(historyRequestDTO);
+			
 			throw new IllegalArgumentException("You are not authorized to update this user.");
 		}
 		
 		if (abonne.getRoleName().equals(Role.GERANT)) {
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: " + null, TypeOpperation.REABONNEMENT, EtatOpperation.ECHEC, "Reabonnement rate.");
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID:  N/A",
+				TypeOpperation.REABONNEMENT,
+				EtatOpperation.ECHEC,
+				"Reabonnement rate."
+			);
 			historyService.addToHistory(historyRequestDTO);
 			
 			throw new IllegalArgumentException("This operation is only for abonne.");
@@ -111,7 +162,13 @@ public class CarteAbonnementService {
 		CarteAbonnement carteAbonnement = abonne.getCarteAbonnement();
 		
 		if (carteAbonnement == null) {
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: " + null, TypeOpperation.REABONNEMENT, EtatOpperation.ECHEC, "Reabonnement rate.");
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID:  N/A",
+				TypeOpperation.REABONNEMENT,
+				EtatOpperation.ECHEC,
+				"Reabonnement rate."
+			);
 			historyService.addToHistory(historyRequestDTO);
 			
 			throw new IllegalArgumentException("Abonne has no card yet.");
@@ -124,7 +181,13 @@ public class CarteAbonnementService {
 		abonne.setCarteAbonnement(carteAbonnement);
 		userRepositories.save(abonne);
 		
-		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: " + null, TypeOpperation.REABONNEMENT, EtatOpperation.SUCCES, "Reabonnement reussit.");
+		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+			abonne.getName(),
+			"Book ID:  N/A",
+			TypeOpperation.REABONNEMENT,
+			EtatOpperation.SUCCES,
+			"Reabonnement reussit."
+		);
 		historyService.addToHistory(historyRequestDTO);
 		
 		carteAbonnementRepository.save(carteAbonnement);
@@ -170,11 +233,26 @@ public class CarteAbonnementService {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		User aunthenticatedUser = (User) authentication.getPrincipal();
 		if (aunthenticatedUser.getId() != gerant.getId()) {
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				gerant.getName(),
+				"Book ID:  N/A",
+				TypeOpperation.SUSPENSION_CARTE,
+				EtatOpperation.ECHEC,
+				"Carte non suspendue."
+			);
+			historyService.addToHistory(historyRequestDTO);
+			
 			 throw new IllegalArgumentException("You are not authorized to update this user.");
 		}
 		
 		if (gerant.getRoleName().equals(Role.ABONNE)) {
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), "Book ID: " + null, TypeOpperation.SUSPENSION_CARTE, EtatOpperation.ECHEC, "Carte non suspendue.");
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				gerant.getName(),
+				"Book ID:  N/A",
+				TypeOpperation.SUSPENSION_CARTE,
+				EtatOpperation.ECHEC,
+				"Carte non suspendue."
+			);
 			historyService.addToHistory(historyRequestDTO);
 			
 			throw new IllegalArgumentException("This is only for gerant access");
@@ -190,7 +268,13 @@ public class CarteAbonnementService {
 		
 		userRepositories.save(abonne);
 		
-		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), "Book ID: " + null, TypeOpperation.SUSPENSION_CARTE, EtatOpperation.SUCCES, "Carte suspendue.");
+		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+			gerant.getName(),
+			"Book ID:  N/A",
+			TypeOpperation.SUSPENSION_CARTE,
+			EtatOpperation.SUCCES,
+			"Carte suspendue."
+		);
 		historyService.addToHistory(historyRequestDTO);
 		
 		carteAbonnementRepository.save(carteAbonnement);

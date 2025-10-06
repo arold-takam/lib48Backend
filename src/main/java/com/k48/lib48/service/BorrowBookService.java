@@ -38,14 +38,6 @@ public class BorrowBookService {
 	
 //	BORROWING MANAGEMENT-----------------------------------------------------------------------------------------------------------------
 	public void makeBorrow(int gerantID, BorrowRequestDTO borrowRequestDTO)   {
-
-		Optional<User>optionalGerant = userRepositories.findById(gerantID);
-		if (optionalGerant.isEmpty() || !optionalGerant.get().getRoleName().equals(Role.GERANT)){
-			throw new IllegalArgumentException("Gerant not found with the ID: "+gerantID);
-		}
-		
-		User gerant = optionalGerant.get();
-		
 		Optional<User>abonneOptional = userRepositories.findById(borrowRequestDTO.abonneID());
 		if (abonneOptional.isEmpty() || !abonneOptional.get().getRoleName().equals(Role.ABONNE)){
 			User abonne = abonneOptional.get();
@@ -57,15 +49,46 @@ public class BorrowBookService {
 		
 		User abonne = abonneOptional.get();
 		
+		Optional<User>optionalGerant = userRepositories.findById(gerantID);
+		if (optionalGerant.isEmpty() || !optionalGerant.get().getRoleName().equals(Role.GERANT)){
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID: "+borrowRequestDTO.bookID(),
+				TypeOpperation.EMPRUNT_LIVRE,
+				EtatOpperation.ECHEC,
+				"Emprunt rate."
+			);
+			historyService.addToHistory(historyRequestDTO);
+			
+			throw new IllegalArgumentException("Gerant not found with the ID: "+gerantID);
+		}
+		
+		User gerant = optionalGerant.get();
+		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		User authenticatedUser = (User) authentication.getPrincipal();
 		if (authenticatedUser.getId() != abonne.getId()) {
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID: "+borrowRequestDTO.bookID(),
+				TypeOpperation.EMPRUNT_LIVRE,
+				EtatOpperation.ECHEC,
+				"Emprunt rate."
+			);
+			historyService.addToHistory(historyRequestDTO);
+			
 			throw new IllegalArgumentException("You are not authorized to borrow this book.");
 		}
 		
 		Optional<Book> livreAEmprunterOpt = bookRespositories.findById(borrowRequestDTO.bookID());
 		if (livreAEmprunterOpt.isEmpty()) {
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate.");
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID: "+borrowRequestDTO.bookID(),
+				TypeOpperation.EMPRUNT_LIVRE,
+				EtatOpperation.ECHEC,
+				"Emprunt rate."
+			);
 			historyService.addToHistory(historyRequestDTO);
 			
 			throw new IllegalArgumentException("Book not found with the ID: " + borrowRequestDTO.bookID());
@@ -73,7 +96,13 @@ public class BorrowBookService {
 		
 		Book livreAEmprunter = livreAEmprunterOpt.get();
 		if (!livreAEmprunter.isEstDisponible()) {
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate.");
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID: "+borrowRequestDTO.bookID(),
+				TypeOpperation.EMPRUNT_LIVRE,
+				EtatOpperation.ECHEC,
+				"Emprunt rate."
+			);
 			historyService.addToHistory(historyRequestDTO);
 			
 			throw new IllegalArgumentException("This book is not available.");
@@ -82,21 +111,39 @@ public class BorrowBookService {
 		CarteAbonnement carteAbonnement = abonne.getCarteAbonnement();
 
 		if (carteAbonnement == null){
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate.");
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID: "+borrowRequestDTO.bookID(),
+				TypeOpperation.EMPRUNT_LIVRE,
+				EtatOpperation.ECHEC,
+				"Emprunt rate."
+			);
 			historyService.addToHistory(historyRequestDTO);
 			
 			throw new IllegalArgumentException("This abonne has no card yet.");
 		}
 		
 		if (!carteAbonnement.isAvailable()){
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate.");
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID: "+borrowRequestDTO.bookID(),
+				TypeOpperation.EMPRUNT_LIVRE,
+				EtatOpperation.ECHEC,
+				"Emprunt rate."
+			);
 			historyService.addToHistory(historyRequestDTO);
 			
 			throw new IllegalArgumentException("This card is not available.");
 		}
 		
 		if (carteAbonnement.getDuree() <= 1) {
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate.");
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID: "+borrowRequestDTO.bookID(),
+				TypeOpperation.EMPRUNT_LIVRE,
+				EtatOpperation.ECHEC,
+				"Emprunt rate."
+			);
 			historyService.addToHistory(historyRequestDTO);
 			
 			throw new IllegalArgumentException("Your card availability is over.");
@@ -105,7 +152,13 @@ public class BorrowBookService {
 		Book bookToBorrow = bookServices.getBookId(borrowRequestDTO.bookID());
 		
 		if (!bookToBorrow.isEstDisponible()){
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate.");
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID: "+borrowRequestDTO.bookID(),
+				TypeOpperation.EMPRUNT_LIVRE,
+				EtatOpperation.ECHEC,
+				"Emprunt rate."
+			);
 			historyService.addToHistory(historyRequestDTO);
 			
 			throw  new IllegalArgumentException("This book is not available.");
@@ -122,7 +175,12 @@ public class BorrowBookService {
 		borrowBook.setDateEmprunt(LocalDate.now());
 		borrowBook.setDelaiEmprunt(borrowRequestDTO.delaiEmprunt());
 		
-		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.SUCCES, "Emprunt reussit.");
+		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+			abonne.getName(),
+			"Book ID: "+borrowRequestDTO.bookID(),
+			TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.SUCCES,
+			"Emprunt reussit."
+		);
 		historyService.addToHistory(historyRequestDTO);
 
 		borrowBookRepository.save(borrowBook);
