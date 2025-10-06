@@ -1,4 +1,4 @@
-package com.k48.lib48.controller;
+package com.k48.lib48.controllers;
 
 import com.k48.lib48.dto.LoginRequestDTO;
 import com.k48.lib48.dto.UserRequestDTO;
