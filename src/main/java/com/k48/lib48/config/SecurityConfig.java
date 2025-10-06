@@ -1,6 +1,10 @@
 package com.k48.lib48.config;
 
 
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,14 +14,16 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity()
 public class SecurityConfig {
 	
 	private final UserDetailsService userDetailsService;
@@ -35,11 +41,19 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth->
 				                      auth.requestMatchers(
 									"/user/login",
-									"/user/register"
+									"/user/register",
+						                      
+						                      "/swagger-ui/**",
+						                      "/swagger-ui.html",
+						                      "/v3/api-docs/**",
+						                      "/webjars/**",
+						                      "/swagger-resources/**",
+						                      "/moneyAccount/deposit/**"
 					                      ).permitAll()
 					                      .anyRequest().authenticated()
 							)
 			       .httpBasic(httpBasic->{})
+			       .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			       .build();
 	}
 	
@@ -54,5 +68,22 @@ public class SecurityConfig {
 		authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
 		
 		return authenticationManagerBuilder.build();
+	}
+	
+	@Bean
+	public OpenAPI customOpenAPI(){
+		final String SECURITY_SCHEME_BASIC = "basic-auth";
+		
+		return new OpenAPI()
+		       .components(new Components()
+			                   .addSecuritySchemes(SECURITY_SCHEME_BASIC, new SecurityScheme()
+				                                                     .type(SecurityScheme.Type.HTTP)
+				                                                     .scheme("basic")
+				                                                     .description("Authentication HTTP Basic"))
+			                   .addSecuritySchemes("noauth", new SecurityScheme()
+				                                                 .type(SecurityScheme.Type.APIKEY)
+				                                                 .in(SecurityScheme.In.HEADER)
+				                                                 .name("no-auth")))
+			                   .security(Collections.singletonList(new SecurityRequirement().addList("basic-auth")));
 	}
 }

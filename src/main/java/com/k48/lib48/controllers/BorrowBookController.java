@@ -3,6 +3,8 @@ package com.k48.lib48.controllers;
 import com.k48.lib48.dto.BorrowRequestDTO;
 import com.k48.lib48.dto.BorrowResponseDTO;
 import com.k48.lib48.service.BorrowBookService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,7 +14,8 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/borrowBook")
 public class BorrowBookController {
-	private BorrowBookService borrowBookService;
+	private final BorrowBookService borrowBookService;
+	private static final Logger log = LoggerFactory.getLogger(BorrowBookController.class);
 	
 	public BorrowBookController(BorrowBookService borrowBookService) {
 		this.borrowBookService = borrowBookService;
@@ -27,11 +30,11 @@ public class BorrowBookController {
 			
 			return new ResponseEntity<>(HttpStatus.OK);
 		}catch (IllegalArgumentException e){
-			System.out.println(e.getMessage());
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}catch (Exception e){
-			System.out.println(e.getMessage());
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}catch (Exception e){
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -43,11 +46,11 @@ public class BorrowBookController {
 			
 			return new ResponseEntity<>(borrowResponseDTO, HttpStatus.OK);
 		}catch (IllegalArgumentException e){
-			System.err.println(e.getMessage());
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}catch (Exception e){
-			System.err.println(e.getMessage());
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -60,11 +63,11 @@ public class BorrowBookController {
 			
 			return new ResponseEntity<>(borrowResponseDTOList, HttpStatus.OK);
 		}catch (IllegalArgumentException e){
-			System.out.println(e.getMessage());
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}catch (Exception e){
-			System.out.println(e.getMessage());
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}catch (Exception e){
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
 	}
@@ -76,10 +79,10 @@ public class BorrowBookController {
 			List<BorrowResponseDTO> borrowResponseDTOList = borrowBookService.getAllBorrowsByAbonne_Id(abonneId);
 			return new ResponseEntity<>(borrowResponseDTOList, HttpStatus.OK);
 		}catch (IllegalArgumentException e){
-			System.err.println(e.getMessage());
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}catch (Exception e){
-			System.err.println(e.getMessage());
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}

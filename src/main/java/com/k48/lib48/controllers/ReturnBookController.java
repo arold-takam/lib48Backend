@@ -4,6 +4,8 @@ import com.k48.lib48.dto.ReturnRequestDTO;
 import com.k48.lib48.dto.ReturnResponseDTO;
 import com.k48.lib48.myEnum.EtatLivre;
 import com.k48.lib48.service.ReturnBookService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,6 +17,7 @@ import java.util.List;
 @RequestMapping(path = "/returnBook")
 public class ReturnBookController {
 	private final ReturnBookService returnBookService;
+	private static final Logger log = LoggerFactory.getLogger(ReturnBookController.class);
 	
 	public ReturnBookController(ReturnBookService returnBookService) {
 		this.returnBookService = returnBookService;
@@ -29,14 +32,11 @@ public class ReturnBookController {
 			
 			return new ResponseEntity<>(HttpStatus.OK);
 		}catch (IllegalArgumentException e){
-			System.out.println(e.getMessage());
-			
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-			
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}catch (Exception e){
-			System.out.println(e.getMessage());
-			
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -48,12 +48,10 @@ public class ReturnBookController {
 			
 			return new ResponseEntity<>(returnResponseDTO, HttpStatus.OK);
 		}catch (IllegalArgumentException e){
-			System.out.println(e.getMessage());
-			
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}catch (Exception e){
-			System.out.println(e.getMessage());
-			
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -66,12 +64,10 @@ public class ReturnBookController {
 			
 			return new ResponseEntity<>(returnResponseDTOList, HttpStatus.OK);
 		}catch (IllegalArgumentException e){
-			System.out.println(e.getMessage());
-			
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}catch (Exception e){
-			System.out.println(e.getMessage());
-			
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}

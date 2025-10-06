@@ -1,4 +1,4 @@
-package com.k48.lib48.controller;
+package com.k48.lib48.controllers;
 
 import com.k48.lib48.dto.BookRequestDTO;
 import com.k48.lib48.dto.BookUpDateDTO;
@@ -6,23 +6,24 @@ import com.k48.lib48.models.Book;
 import com.k48.lib48.myEnum.EtatLivre;
 import com.k48.lib48.service.BookServices;
 import io.swagger.v3.oas.annotations.Operation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
 import java.util.NoSuchElementException;
-
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping(path = "/books")
 @CrossOrigin(origins = "*")
 public class BookController {
-	private BookServices bookServices;
+	private final BookServices bookServices;
+	private static final Logger log = LoggerFactory.getLogger(BookController.class);
 	
 	public BookController(BookServices bookServices) {
 		this.bookServices = bookServices;
@@ -42,11 +43,11 @@ public class BookController {
 			Book createdBook = bookServices.createBook(idCategory, bookRequestDTO, coverImage);
 			return new ResponseEntity<>(createdBook, HttpStatus.CREATED);
 		} catch (NoSuchElementException e) {
-			System.out.println(e.getMessage());
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			log.error(e.getMessage());
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -64,7 +65,11 @@ public class BookController {
 			Book book = bookServices.getBookId(id);
 			return ResponseEntity.ok(book);
 		} catch (NoSuchElementException e) {
-			throw new NoSuchElementException(e.getMessage());
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -75,7 +80,11 @@ public class BookController {
 			Book book = bookServices.getBooksByTitle(title);
 			return ResponseEntity.ok(book);
 		} catch (NoSuchElementException e) {
-			throw new NoSuchElementException(e.getMessage());
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -87,7 +96,11 @@ public class BookController {
 			List<Book> books = bookServices.getBooksByCategorieNom(categorie);
 			return ResponseEntity.ok(books);
 		} catch (NoSuchElementException e) {
-			throw new NoSuchElementException(e.getMessage());
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -104,7 +117,11 @@ public class BookController {
 			Book book = bookServices.updateBook(id, livreEtat, idCategory, bookUpDateDTO, coverImage);
 			return ResponseEntity.ok(book);
 		} catch (NoSuchElementException e) {
-			throw new NoSuchElementException(e.getMessage());
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -116,7 +133,11 @@ public class BookController {
 			bookServices.deleteBook(id);
 			return ResponseEntity.noContent().build();
 		} catch (NoSuchElementException e) {
-			throw new NoSuchElementException(e.getMessage());
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	

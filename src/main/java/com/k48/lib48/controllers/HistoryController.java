@@ -5,6 +5,8 @@ import com.k48.lib48.models.History;
 import com.k48.lib48.myEnum.EtatOpperation;
 import com.k48.lib48.myEnum.TypeOpperation;
 import com.k48.lib48.service.HistoryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,8 +19,8 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 @RestController
 @RequestMapping(path = "/history")
 public class HistoryController {
-	
 	private HistoryService historyService;
+	private static final Logger log = LoggerFactory.getLogger(HistoryController.class);
 	
 	public HistoryController(HistoryService historyService) {
 		this.historyService = historyService;
@@ -31,7 +33,11 @@ public class HistoryController {
             try {
                 return new ResponseEntity<>(historyService.getHistoryByID(historyID), HttpStatus.OK);
             }catch (IllegalArgumentException e){
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		log.error(e.getMessage());
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }catch (Exception e){
+		log.error(e.getMessage());
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
     }
     
@@ -52,10 +58,11 @@ public class HistoryController {
 		try {
                     return new ResponseEntity<>(historyService.findByUserName(userName), HttpStatus.OK);
                 }catch (IllegalArgumentException e){
-			System.out.println(e.getMessage());
+			log.error(e.getMessage());
                     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
                 } catch (Exception e) {
-			throw new RuntimeException(e);
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
 	

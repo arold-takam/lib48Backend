@@ -9,6 +9,8 @@ import com.k48.lib48.myEnum.TypeAbonnement;
 import com.k48.lib48.service.CarteAbonnementService;
 import com.k48.lib48.service.UserServices;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,6 +30,7 @@ public class UserController {
 	private final UserServices userServices;
 	private final CarteAbonnementService carteAbonnementService;
 	private final AuthenticationManager authenticationManager;
+	private static final Logger log = LoggerFactory.getLogger(UserController.class);
 	
 	public UserController(UserServices userServices, CarteAbonnementService carteAbonnementService, AuthenticationManager authenticationManager) {
 		this.userServices = userServices;
@@ -44,8 +47,11 @@ public class UserController {
 			
 			return new ResponseEntity<>(HttpStatus.CREATED);
 		}catch (IllegalArgumentException e){
-			System.out.println(e.getMessage());
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			log.error(e.getMessage());
+			return  new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}catch (Exception e){
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -61,10 +67,13 @@ public class UserController {
 			
 			return ResponseEntity.ok("Login successful !");
 		}catch (AuthenticationException e){
+			log.error(e.getMessage());
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid authentication; try again.");
+		}catch (Exception e){
+			log.error(e.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error; try again.");
 		}
 	}
-	
 	
 	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/{userID}", produces = APPLICATION_JSON_VALUE)
@@ -74,7 +83,11 @@ public class UserController {
 			
 			return new ResponseEntity<>(user, HttpStatus.OK);
 		}catch (IllegalArgumentException e){
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}catch (Exception e){
+			log.error(e.getMessage());
+			return new  ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -113,10 +126,10 @@ public class UserController {
 			
 			return new ResponseEntity<>(HttpStatus.OK);
 		}catch (IllegalArgumentException e){
-			System.out.println(e.getMessage());
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}catch (Exception e){
-			System.out.println(e.getMessage());
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -131,8 +144,10 @@ public class UserController {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 		}catch (IllegalArgumentException e){
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}catch (Exception e){
+			log.error(e.getMessage());
 			System.out.println(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
@@ -149,11 +164,11 @@ public class UserController {
 			
 			return new ResponseEntity<>(HttpStatus.OK);
 		}catch (IllegalArgumentException e){
-			System.out.println(e.getMessage());
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}catch (Exception e){
-			System.out.println(e.getMessage());
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}catch (Exception e){
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -165,8 +180,10 @@ public class UserController {
 			
 			return new ResponseEntity<>(carteAbonnement, HttpStatus.OK);
 		}catch (IllegalArgumentException e){
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}catch (Exception e){
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -174,15 +191,9 @@ public class UserController {
 	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/card/byGerant/{gerantID}")
 	public ResponseEntity<List<CarteAbonnement>>getAllCards(@PathVariable int gerantID){
-		try {
-			List<CarteAbonnement>carteAbonnementList = carteAbonnementService.getAllCards(gerantID);
-			
-			return new ResponseEntity<>(carteAbonnementList, HttpStatus.OK);
-		}catch (IllegalArgumentException e){
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}catch (Exception e){
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
+		List<CarteAbonnement>carteAbonnementList = carteAbonnementService.getAllCards(gerantID);
+		
+		return new ResponseEntity<>(carteAbonnementList, HttpStatus.OK);
 	}
 	
 	@PreAuthorize("hasRole('ABONNE')")
@@ -192,13 +203,11 @@ public class UserController {
 			carteAbonnementService.subscribe(abonneID, typeAbonnement);
 			
 			return new ResponseEntity<>(HttpStatus.OK);
-		}catch (IllegalArgumentException e){
-			System.out.println(e.getMessage());
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}catch (AuthenticationException e){
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+		} catch (AuthenticationException e){
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		} catch (Exception e){
-			System.out.println(e.getMessage());
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -212,10 +221,12 @@ public class UserController {
 			if (delete){
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			}else {
+				log.error("No card found for this user.");
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 			
 		}catch (Exception e){
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -230,10 +241,10 @@ public class UserController {
 			
 			return new ResponseEntity<>(HttpStatus.OK);
 		}catch (IllegalArgumentException e){
-			System.out.println(e.getMessage());
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}catch (Exception e){
-			System.out.println(e.getMessage());
+			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
