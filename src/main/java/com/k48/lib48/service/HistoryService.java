@@ -6,7 +6,7 @@ import com.k48.lib48.models.User;
 import com.k48.lib48.myEnum.EtatOpperation;
 import com.k48.lib48.myEnum.TypeOpperation;
 import com.k48.lib48.repository.HistoryRepository;
-import com.k48.lib48.repository.UserRepositories;
+import com.k48.lib48.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,12 +16,12 @@ import java.util.List;
 
 @Service
 public class HistoryService {
-	private final UserRepositories userRepositories;
+	private final UserRepository userRepository;
 	private HistoryRepository historyRepository;
 	
-	public HistoryService(HistoryRepository historyRepository, UserRepositories userRepositories) {
+	public HistoryService(HistoryRepository historyRepository, UserRepository userRepository) {
 		this.historyRepository = historyRepository;
-		this.userRepositories = userRepositories;
+		this.userRepository = userRepository;
 	}
 	
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -59,8 +59,7 @@ public class HistoryService {
 	}
 	
 	public List<History>findByUserName(String userName){
-		User user = userRepositories.findByNameIgnoreCase(userName);
-		System.out.println(user.getName());
+		User user = userRepository.findByNameIgnoreCase(userName);
 
 		if (user == null){
 			throw new IllegalArgumentException("No user found at the name: "+userName);

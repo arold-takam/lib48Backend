@@ -7,8 +7,8 @@ import com.k48.lib48.models.User;
 import com.k48.lib48.myEnum.EtatOpperation;
 import com.k48.lib48.myEnum.Role;
 import com.k48.lib48.myEnum.TypeOpperation;
-import com.k48.lib48.repository.CategoryRepositories;
-import com.k48.lib48.repository.UserRepositories;
+import com.k48.lib48.repository.CategoryRepository;
+import com.k48.lib48.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,13 +16,13 @@ import java.util.NoSuchElementException;
 
 @Service
 public class CategoryServices {
-	private final CategoryRepositories categoryRepo;
-	private final UserRepositories userRepositories;
+	private final CategoryRepository categoryRepo;
+	private final UserRepository userRepository;
 	private final HistoryService historyService;
 	
-	public CategoryServices(CategoryRepositories categoryRepo, UserRepositories userRepositories, HistoryService historyService) {
+	public CategoryServices(CategoryRepository categoryRepo, UserRepository userRepository, HistoryService historyService) {
 		this.categoryRepo = categoryRepo;
-		this.userRepositories = userRepositories;
+		this.userRepository = userRepository;
 		this.historyService = historyService;
 	}
  
@@ -47,7 +47,7 @@ public class CategoryServices {
 	
 	public Category createCategory(CategoryRequestDTO categoryRequestDTO) {
 		if (categoryRequestDTO == null) {
-			User gerant = userRepositories.findAllByRoleName(Role.GERANT).getFirst();
+			User gerant = userRepository.findAllByRoleName(Role.GERANT).getFirst();
 			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), "Book ID: " + null, TypeOpperation.AJOUT_CATEGORIE, EtatOpperation.ECHEC, "Categorie non ajoutee.");
 			historyService.addToHistory(historyRequestDTO);
 			
@@ -59,7 +59,7 @@ public class CategoryServices {
 		existingCategory.setNom(categoryRequestDTO.nom());
 		existingCategory.setDescription(categoryRequestDTO.description());
 		
-		User gerant = userRepositories.findAllByRoleName(Role.GERANT).getFirst();
+		User gerant = userRepository.findAllByRoleName(Role.GERANT).getFirst();
 		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), "Book ID: " + null, TypeOpperation.AJOUT_CATEGORIE, EtatOpperation.SUCCES, "Categorie ajoutee.");
 		historyService.addToHistory(historyRequestDTO);
 		
@@ -73,7 +73,7 @@ public class CategoryServices {
 		updatedCategory.setNom(categoryRequestDTO.nom());
 		updatedCategory.setDescription(categoryRequestDTO.description());
 		
-		User gerant = userRepositories.findAllByRoleName(Role.GERANT).getFirst();
+		User gerant = userRepository.findAllByRoleName(Role.GERANT).getFirst();
 		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), "Book ID: " + null, TypeOpperation.MODIFICATION_CATEGORIE, EtatOpperation.SUCCES, "Categorie modifiee.");
 		historyService.addToHistory(historyRequestDTO);
 		
@@ -83,7 +83,7 @@ public class CategoryServices {
 	public void deleteCategory(long categoryId) {
 		Category deletedCategory = categoryRepo.findById(categoryId).orElseThrow(() -> new NoSuchElementException("Category not found"));
 		
-		User gerant = userRepositories.findAllByRoleName(Role.GERANT).getFirst();
+		User gerant = userRepository.findAllByRoleName(Role.GERANT).getFirst();
 		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), "Book ID: " + null, TypeOpperation.SUPPRESSION_CATEGORIE, EtatOpperation.SUCCES, "Categorie supprimee.");
 		historyService.addToHistory(historyRequestDTO);
 		

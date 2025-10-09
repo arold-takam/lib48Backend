@@ -22,18 +22,18 @@ import java.util.Optional;
 public class ReturnBookService {
 	private final ReturnBookRepository returnBookRepository;
 	private final BorrowBookRepository borrowBookRepository;
-	private final UserRepositories userRepositories;
+	private final UserRepository userRepository;
 	private final CarteAbonnementRepository carteAbonnementRepository;
 	private final HistoryService historyService;
-	private BookRespositories bookRespositories;
+	private BookRepository bookRepository;
 	
 	private final UserServices userServices;
 	
-	public ReturnBookService(ReturnBookRepository returnBookRepository, BorrowBookRepository borrowBookRepository, UserRepositories userRepositories, BookRespositories bookRespositories, CarteAbonnementRepository carteAbonnementRepository, UserServices userServices, HistoryService historyService) {
+	public ReturnBookService(ReturnBookRepository returnBookRepository, BorrowBookRepository borrowBookRepository, UserRepository userRepository, BookRepository bookRepository, CarteAbonnementRepository carteAbonnementRepository, UserServices userServices, HistoryService historyService) {
 		this.returnBookRepository = returnBookRepository;
 		this.borrowBookRepository = borrowBookRepository;
-		this.userRepositories = userRepositories;
-		this.bookRespositories = bookRespositories;
+		this.userRepository = userRepository;
+		this.bookRepository = bookRepository;
 		this.carteAbonnementRepository = carteAbonnementRepository;
 		this.userServices = userServices;
 		this.historyService = historyService;
@@ -123,7 +123,7 @@ public class ReturnBookService {
 		
 		ReturnBook returnBook = optionalReturnBook.get();
 		
-		User gerantReturning = userRepositories.findById(gerantID).orElseThrow(() -> new IllegalArgumentException("Gerant not found with the ID: " + gerantID));
+		User gerantReturning = userRepository.findById(gerantID).orElseThrow(() -> new IllegalArgumentException("Gerant not found with the ID: " + gerantID));
 		
 		return new ReturnResponseDTO(
 			returnBook.getId(),
@@ -213,7 +213,7 @@ public class ReturnBookService {
 
 //METHODES UTILES--------------------------------------------------------------------------------------------------------------------------
 	private User getGerant(int id) {
-		return userRepositories.findById(id)
+		return userRepository.findById(id)
 			       .filter(u -> u.getRoleName().equals(Role.GERANT))
 			       .orElseThrow(() -> new IllegalArgumentException("Gerant not found with ID: " + id));
 	}
@@ -230,7 +230,7 @@ public class ReturnBookService {
 	}
 	
 	private User getAbonne(int id) {
-		return userRepositories.findById(id)
+		return userRepository.findById(id)
 			       .filter(u -> u.getRoleName().equals(Role.ABONNE))
 			       .orElseThrow(() -> new IllegalArgumentException("Abonné not found with ID: " + id));
 	}
@@ -273,7 +273,7 @@ public class ReturnBookService {
 	private void updateBook(Book book, EtatLivre nouvelEtat) {
 		book.setEtatLivre(nouvelEtat);
 		book.setEstDisponible(true);
-		bookRespositories.save(book);
+		bookRepository.save(book);
 	}
 	
 	private ReturnBook buildReturnBook(User gerant, BorrowBook borrowBook, EtatLivre etat, LocalDate dateRetour) {

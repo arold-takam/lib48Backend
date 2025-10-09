@@ -8,9 +8,9 @@ import com.k48.lib48.models.User;
 import com.k48.lib48.myEnum.EtatOpperation;
 import com.k48.lib48.myEnum.Role;
 import com.k48.lib48.myEnum.TypeOpperation;
-import com.k48.lib48.repository.BookRespositories;
+import com.k48.lib48.repository.BookRepository;
 import com.k48.lib48.repository.BorrowBookRepository;
-import com.k48.lib48.repository.UserRepositories;
+import com.k48.lib48.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -21,16 +21,16 @@ import java.util.Optional;
 
 @Service
 public class BorrowBookService {
-	private final UserRepositories userRepositories;
+	private final UserRepository userRepository;
 	private final BorrowBookRepository borrowBookRepository;
-	private final BookRespositories bookRespositories;
+	private final BookRepository bookRepository;
 	private final BookServices bookServices;
 	private final HistoryService historyService;
 	
-	public BorrowBookService(UserRepositories userRepositories, BorrowBookRepository borrowBookRepository, BookRespositories bookRespositories, BookServices bookServices, HistoryService historyService) {
-		this.userRepositories = userRepositories;
+	public BorrowBookService(UserRepository userRepository, BorrowBookRepository borrowBookRepository, BookRepository bookRepository, BookServices bookServices, HistoryService historyService) {
+		this.userRepository = userRepository;
 		this.borrowBookRepository = borrowBookRepository;
-		this.bookRespositories = bookRespositories;
+		this.bookRepository = bookRepository;
 		this.bookServices = bookServices;
 		this.historyService = historyService;
 	}
@@ -38,18 +38,27 @@ public class BorrowBookService {
 	
 //	BORROWING MANAGEMENT-----------------------------------------------------------------------------------------------------------------
 	public void makeBorrow(int gerantID, BorrowRequestDTO borrowRequestDTO)   {
-		Optional<User>abonneOptional = userRepositories.findById(borrowRequestDTO.abonneID());
-		if (abonneOptional.isEmpty() || !abonneOptional.get().getRoleName().equals(Role.ABONNE)){
-			User abonne = abonneOptional.get();
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate.");
-			historyService.addToHistory(historyRequestDTO);
-			
+		Optional<User>abonneOptional = userRepository.findById(borrowRequestDTO.abonneID());
+		
+		if (abonneOptional.isEmpty()) {
 			throw new IllegalArgumentException("Abonne not found with the ID: "+borrowRequestDTO.abonneID());
 		}
-		
 		User abonne = abonneOptional.get();
 		
-		Optional<User>optionalGerant = userRepositories.findById(gerantID);
+		if (!abonne.getRoleName().equals(Role.ABONNE)){
+			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
+				abonne.getName(),
+				"Book ID: "+borrowRequestDTO.bookID(),
+				TypeOpperation.EMPRUNT_LIVRE,
+				EtatOpperation.ECHEC,
+				"Emprunt rate."
+			);
+			historyService.addToHistory(historyRequestDTO);
+			
+			throw new IllegalArgumentException("User with ID: " + abonne.getId() + " is not an Abonne.");
+		}
+		
+		Optional<User>optionalGerant = userRepository.findById(gerantID);
 		if (optionalGerant.isEmpty() || !optionalGerant.get().getRoleName().equals(Role.GERANT)){
 			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
 				abonne.getName(),
@@ -80,7 +89,7 @@ public class BorrowBookService {
 			throw new IllegalArgumentException("You are not authorized to borrow this book.");
 		}
 		
-		Optional<Book> livreAEmprunterOpt = bookRespositories.findById(borrowRequestDTO.bookID());
+		Optional<Book> livreAEmprunterOpt = bookRepository.findById(borrowRequestDTO.bookID());
 		if (livreAEmprunterOpt.isEmpty()) {
 			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
 				abonne.getName(),
@@ -165,7 +174,7 @@ public class BorrowBookService {
 		}
 		
 		bookToBorrow.setEstDisponible(false);
-		bookRespositories.save(bookToBorrow);
+		bookRepository.save(bookToBorrow);
 		
 		BorrowBook borrowBook = new BorrowBook();
 		
@@ -190,7 +199,7 @@ public class BorrowBookService {
 	public BorrowResponseDTO getBorrowByID(int gerantID,int borrowID, int abonneID){
 
 		//remplacer l'idée du gérant par son mot de passe
-		User gerant = userRepositories.findById(gerantID).orElseThrow(
+		User gerant = userRepository.findById(gerantID).orElseThrow(
 				() -> new IllegalArgumentException("There is no Gerant with ID: "+gerantID)
 		);
 		Optional<BorrowBook>optionalBorrowBook = borrowBookRepository.findByIdAndAbonne_Id(borrowID, abonneID);
@@ -217,7 +226,7 @@ public class BorrowBookService {
 	
 	public List<BorrowResponseDTO>getAllBorrows(int gerantID){
 		
-		User gerant = userRepositories.findById(gerantID).orElseThrow(() -> new IllegalArgumentException("Gerant not found with the ID: " + gerantID));
+		User gerant = userRepository.findById(gerantID).orElseThrow(() -> new IllegalArgumentException("Gerant not found with the ID: " + gerantID));
 	
 		if (gerant.getRoleName() != Role.GERANT){
 			throw new IllegalArgumentException("This operation is only for Gerant.");
@@ -245,7 +254,7 @@ public class BorrowBookService {
 	}
 
 	public List<BorrowResponseDTO>getAllBorrowsByAbonne_Id(int abonneID){
-		User abonne = userRepositories.findById(abonneID).orElseThrow(
+		User abonne = userRepository.findById(abonneID).orElseThrow(
 				() -> new IllegalArgumentException("There is no User with ID: "+abonneID)
 		);
 		List<BorrowBook> borrowBookList = borrowBookRepository.findAllByAbonne_Id(abonne.getId());

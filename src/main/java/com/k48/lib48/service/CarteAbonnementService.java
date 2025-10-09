@@ -8,13 +8,12 @@ import com.k48.lib48.myEnum.Role;
 import com.k48.lib48.myEnum.TypeAbonnement;
 import com.k48.lib48.myEnum.TypeOpperation;
 import com.k48.lib48.repository.CarteAbonnementRepository;
-import com.k48.lib48.repository.UserRepositories;
+import com.k48.lib48.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 
 import static com.k48.lib48.myEnum.TypeAbonnement.*;
@@ -22,19 +21,19 @@ import static com.k48.lib48.myEnum.TypeAbonnement.*;
 @Service
 public class CarteAbonnementService {
 	private final CarteAbonnementRepository carteAbonnementRepository;
-	private final UserRepositories userRepositories;
+	private final UserRepository userRepository;
 	private final HistoryService historyService;
 	
-	public CarteAbonnementService(CarteAbonnementRepository carteAbonnementRepository, UserRepositories userRepositories, HistoryService historyService) {
+	public CarteAbonnementService(CarteAbonnementRepository carteAbonnementRepository, UserRepository userRepository, HistoryService historyService) {
 		this.carteAbonnementRepository = carteAbonnementRepository;
-		this.userRepositories = userRepositories;
+		this.userRepository = userRepository;
 		this.historyService = historyService;
 	}
 
 //	Abonne CARTEaBONNEMENT MANAGEMENT--------------------------------------------------------------------------------------------------------------
 	
 	public void createCarte(int abonneID, TypeAbonnement typeAbonnement) {
-		User abonne = userRepositories.findById(abonneID).orElseThrow(() -> new IllegalArgumentException("Abonne not found with the ID: " + abonneID));
+		User abonne = userRepository.findById(abonneID).orElseThrow(() -> new IllegalArgumentException("Abonne not found with the ID: " + abonneID));
 		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		User authenticatedUser = (User) authentication.getPrincipal();
@@ -99,12 +98,12 @@ public class CarteAbonnementService {
 		);
 		historyService.addToHistory(historyRequestDTO);
 		
-		userRepositories.save(abonne);
+		userRepository.save(abonne);
 		
 	}
 	
 	public CarteAbonnement getCardID(int abonneID) {
-		User abonne = userRepositories.findById(abonneID).orElseThrow(() -> new IllegalArgumentException("Abonne not found with the ID: " + abonneID));
+		User abonne = userRepository.findById(abonneID).orElseThrow(() -> new IllegalArgumentException("Abonne not found with the ID: " + abonneID));
 		
 		CarteAbonnement carteAbonnement = abonne.getCarteAbonnement();
 		
@@ -116,7 +115,7 @@ public class CarteAbonnementService {
 	}
 	
 	public void subscribe(int abonneID, TypeAbonnement typeAbonnement) {
-		User abonne = userRepositories.findById(abonneID).orElseThrow(() -> new IllegalArgumentException("Abonne not found with the ID: " + abonneID));
+		User abonne = userRepository.findById(abonneID).orElseThrow(() -> new IllegalArgumentException("Abonne not found with the ID: " + abonneID));
 		
 		if (!typeAbonnement.equals(STANDART) && !typeAbonnement.equals(CUSTUM) && !typeAbonnement.equals(VIP)){
 			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
@@ -179,7 +178,7 @@ public class CarteAbonnementService {
 		carteAbonnement = setCardAvailability(carteAbonnement, typeAbonnement);
 		
 		abonne.setCarteAbonnement(carteAbonnement);
-		userRepositories.save(abonne);
+		userRepository.save(abonne);
 		
 		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
 			abonne.getName(),
@@ -194,7 +193,7 @@ public class CarteAbonnementService {
 	}
 	
 	public boolean deleteCard(int abonneID) {
-		User abonne = userRepositories.findById(abonneID).orElseThrow(() -> new IllegalArgumentException("Abonne not found with the ID: " + abonneID));
+		User abonne = userRepository.findById(abonneID).orElseThrow(() -> new IllegalArgumentException("Abonne not found with the ID: " + abonneID));
 		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		User authenticatedUser = (User) authentication.getPrincipal();
@@ -217,7 +216,7 @@ public class CarteAbonnementService {
 			throw new IllegalArgumentException("This abonne has no card yet.");
 		}
 		abonne.setCarteAbonnement(null);
-		userRepositories.save(abonne);
+		userRepository.save(abonne);
 		carteAbonnementRepository.delete(carte);
 		
 		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(abonne.getName(), "Book ID: " + null, TypeOpperation.SURPESSION_CARTE, EtatOpperation.SUCCES, "Carte supprimee.");
@@ -228,7 +227,7 @@ public class CarteAbonnementService {
 	
 	//	Gerant CardAbonnement Management-------------------------------------------------------------------------------
 	public void revoqueCard(int abonneID, int gerantID) {
-		User gerant = userRepositories.findById(gerantID).orElseThrow(() -> new IllegalArgumentException("Gerant not found with the ID: " + gerantID));
+		User gerant = userRepository.findById(gerantID).orElseThrow(() -> new IllegalArgumentException("Gerant not found with the ID: " + gerantID));
 		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		User aunthenticatedUser = (User) authentication.getPrincipal();
@@ -258,7 +257,7 @@ public class CarteAbonnementService {
 			throw new IllegalArgumentException("This is only for gerant access");
 		}
 		
-		User abonne = userRepositories.findById(abonneID).orElseThrow(() -> new IllegalArgumentException("Abonne not found with the ID: " + abonneID));
+		User abonne = userRepository.findById(abonneID).orElseThrow(() -> new IllegalArgumentException("Abonne not found with the ID: " + abonneID));
 		
 		CarteAbonnement carteAbonnement = abonne.getCarteAbonnement();
 		carteAbonnement.setAvailable(false);
@@ -266,7 +265,7 @@ public class CarteAbonnementService {
 		
 		abonne.setCarteAbonnement(carteAbonnement);
 		
-		userRepositories.save(abonne);
+		userRepository.save(abonne);
 		
 		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
 			gerant.getName(),
@@ -281,7 +280,7 @@ public class CarteAbonnementService {
 	}
 	
 	public List<CarteAbonnement> getAllCards(int gerantID) {
-		User gerant = userRepositories.findById(gerantID).orElseThrow(() -> new IllegalArgumentException("Gerant not found with the ID: " + gerantID));
+		User gerant = userRepository.findById(gerantID).orElseThrow(() -> new IllegalArgumentException("Gerant not found with the ID: " + gerantID));
 		
 		if (gerant.getRoleName().equals(Role.ABONNE)) {
 			throw new IllegalArgumentException("This is only for gerant access");

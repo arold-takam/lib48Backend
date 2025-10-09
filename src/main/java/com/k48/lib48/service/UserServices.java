@@ -8,26 +8,25 @@ import com.k48.lib48.myEnum.Role;
 import com.k48.lib48.myEnum.TypeOpperation;
 import com.k48.lib48.repository.BorrowBookRepository;
 import com.k48.lib48.repository.ReturnBookRepository;
-import com.k48.lib48.repository.UserRepositories;
+import com.k48.lib48.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @Service
 public class UserServices {
-	private final UserRepositories userRepositories;
+	private final UserRepository userRepository;
 	private final HistoryService historyService;
 	private final PasswordEncoder passwordEncoder;
 	private final BorrowBookRepository borrowBookRepository;
 	private final ReturnBookRepository returnBookRepository;
 	
-	public UserServices(UserRepositories userRepositories, HistoryService historyService, PasswordEncoder passwordEncoder, BorrowBookRepository borrowBookRepository, ReturnBookRepository returnBookRepository) {
-		this.userRepositories = userRepositories;
+	public UserServices(UserRepository userRepository, HistoryService historyService, PasswordEncoder passwordEncoder, BorrowBookRepository borrowBookRepository, ReturnBookRepository returnBookRepository) {
+		this.userRepository = userRepository;
 		this.historyService = historyService;
 		this.passwordEncoder = passwordEncoder;
 		this.borrowBookRepository = borrowBookRepository;
@@ -56,7 +55,7 @@ public class UserServices {
 		
 		User user = new User();
 		
-		User existingUser = userRepositories.findByMailIgnoreCase(userRequestDTO.mail());
+		User existingUser = userRepository.findByMailIgnoreCase(userRequestDTO.mail());
 		if (existingUser != null) {
 			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
 				userRequestDTO.name(),
@@ -78,7 +77,7 @@ public class UserServices {
 		}
 		user.setRoleName(roleName);
 		
-		userRepositories.save(user);
+		userRepository.save(user);
 		
 		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
 			userRequestDTO.name(),
@@ -91,14 +90,14 @@ public class UserServices {
 	}
 	
 	public User getUserID(int userID){
-		User user = userRepositories.findById(userID).orElseThrow(()->new IllegalArgumentException("No user found at the ID: "+userID));
+		User user = userRepository.findById(userID).orElseThrow(()->new IllegalArgumentException("No user found at the ID: "+userID));
 	
 		
 		return user;
 	}
 	
 	public User getUserRoleAndName(String name, Role role){
-		User user = userRepositories.findByNameIgnoreCaseAndRoleName(name, role);
+		User user = userRepository.findByNameIgnoreCaseAndRoleName(name, role);
 		
 		if (user == null){
 			throw new IllegalArgumentException("No  "+role+" found at thz name of: "+name);
@@ -108,17 +107,17 @@ public class UserServices {
 	}
 	
 	public List<User> getAllUsers(){
-		return userRepositories.findAll();
+		return userRepository.findAll();
 	}
 	
 	public List<User> getAllUsersRole(Role role){
-		return userRepositories.findAllByRoleName(role);
+		return userRepository.findAllByRoleName(role);
 	}
 	
 	public void updateUser(int userID, Role roleName,  UserRequestDTO userRequestDTO){
-		User user= userRepositories.findById(userID).orElseThrow(()-> new IllegalArgumentException("User with the ID: "+userID+" not found"));
+		User user= userRepository.findById(userID).orElseThrow(()-> new IllegalArgumentException("User with the ID: "+userID+" not found"));
 		
-		User existingUser = userRepositories.findByMailIgnoreCase(userRequestDTO.mail());
+		User existingUser = userRepository.findByMailIgnoreCase(userRequestDTO.mail());
 		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		User aunthenticatedUser = (User) authentication.getPrincipal();
@@ -155,7 +154,7 @@ public class UserServices {
 		}
 		user.setRoleName(roleName);
 		
-		userRepositories.save(user);
+		userRepository.save(user);
 		
 		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
 			userRequestDTO.name(),
@@ -168,7 +167,7 @@ public class UserServices {
 	
 	@Transactional
 	public boolean deleteUser(int userID){
-		User user= userRepositories.findById(userID).orElseThrow(()-> new IllegalArgumentException("User with the ID: "+userID+" not found"));
+		User user= userRepository.findById(userID).orElseThrow(()-> new IllegalArgumentException("User with the ID: "+userID+" not found"));
 		
 		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
 			user.getName(),
@@ -184,7 +183,7 @@ public class UserServices {
 		borrowBookRepository.deleteAllByAbonne(user);
 //		-------------------------------------------------------------------------------------------------------------
 		
-		userRepositories.delete(user);
+		userRepository.delete(user);
 		
 		return true;
 	}
