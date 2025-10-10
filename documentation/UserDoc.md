@@ -21,11 +21,11 @@ Ce contrôleur gère l’authentification, la gestion des utilisateurs (Gérants
 
 ## 🔹 2. Gestion des Cartes d’Abonnement (Abonné)
 
-| Endpoint                          | But                                                       | Rôle Requis | Contraintes Principales                                                  | Codes de Retour Clés                          |
-|-----------------------------------|------------------------------------------------------------|-------------|---------------------------------------------------------------------------|------------------------------------------------|
-| `POST /create/card/{abonneID}`    | Créer la carte d’abonnement initiale.                     | ABONNE      | Type d’abonnement obligatoire. L’Abonné ne doit pas déjà avoir de carte. | `200 OK`, `400 Bad Request`                   |
-| `PUT /subscribe/card/byAbonne`    | Renouveler ou modifier son abonnement.                    | ABONNE      | Type d’abonnement obligatoire. L’Abonné doit être authentifié.           | `200 OK`, `401 Unauthorized`, `400 Bad Request`|
-| `DELETE /delete/card/{abonneID}`  | Supprimer sa carte d’abonnement.                          | ABONNE      | **Interdit si des livres sont en cours d’emprunt.**                      | `204 No Content`, `404 Not Found`             |
+| Endpoint                         | But                                    | Rôle Requis | Contraintes Principales                                                                                 | Codes de Retour Clés                            |
+|----------------------------------|----------------------------------------|-------------|---------------------------------------------------------------------------------------------------------|-------------------------------------------------|
+| `POST /create/card/{abonneID}`   | Créer la carte d’abonnement initiale.  | ABONNE      | Type d’abonnement obligatoire. L’Abonné ne doit pas déjà avoir de carte.                                | `200 OK`, `400 Bad Request`                     |
+| `PUT /subscribe/card/byAbonne`   | Renouveler ou modifier son abonnement. | ABONNE      | Type d’abonnement obligatoire. L’Abonné doit être authentifié. <br/>NB:Un réabonnement écrase l'ancien. | `200 OK`, `401 Unauthorized`, `400 Bad Request` |
+| `DELETE /delete/card/{abonneID}` | Supprimer sa carte d’abonnement.       | ABONNE      | **Interdit si des livres sont en cours d’emprunt.**                                                     | `204 No Content`, `404 Not Found`               |
 
 ---
 
