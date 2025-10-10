@@ -36,3 +36,4 @@ Ce contrôleur gère l’authentification, la gestion des utilisateurs (Gérants
 | `GET /get/card/{abonneID}`        | Récupérer les détails de la carte d’un Abonné.            | GERANT      | L’ID de l’Abonné doit exister et avoir une carte.                        | `200 OK`, `404 Not Found`                     |
 | `GET /get/card/byGerant`          | Obtenir la liste de toutes les cartes d’abonnement.       | GERANT      | Le `gerantID` est utilisé pour valider l’opérateur.                      | `200 OK`                                      |
 | `PUT /revoque/card/{abonneID}`    | Révoquer le droit d’emprunt d’un Abonné.                  | GERANT      | L’Abonné et le Gérant doivent exister. Met à jour le statut à "révoqué".| `200 OK`, `404 Not Found`                     |
+ 
