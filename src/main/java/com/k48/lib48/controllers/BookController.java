@@ -52,13 +52,11 @@ public class BookController {
 	}
 	
 	// GET BOOK ------------------------------------------
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/All", produces = APPLICATION_JSON_VALUE)
 	public List<Book> getAllBooks() {
 		return bookServices.getAllBooks();
 	}
 	
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/byID/{id}", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<Book> getBookById(@PathVariable long id) {
 		try {
@@ -73,7 +71,6 @@ public class BookController {
 		}
 	}
 	
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/byTitle", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<Book> getBookByTitle(@RequestParam String title) {
 		try {
@@ -88,8 +85,6 @@ public class BookController {
 		}
 	}
 	
-	
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/byCategory", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<Book>> getBookByCategorie(@RequestParam String categorie) {
 		try {

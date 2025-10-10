@@ -28,6 +28,20 @@ public class CategoryServices {
  
  
 //    ------------------------------------------------------------------------------------------------------------------------------------------------------------
+	public Category createCategory(CategoryRequestDTO categoryRequestDTO) {
+	validateCategoryRequest(categoryRequestDTO);
+	
+	Category existingCategory = new Category();
+	
+	existingCategory.setNom(categoryRequestDTO.nom());
+	existingCategory.setDescription(categoryRequestDTO.description());
+	
+	User gerant = userRepository.findAllByRoleName(Role.GERANT).getFirst();
+	HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), "Book ID: " + null, TypeOpperation.AJOUT_CATEGORIE, EtatOpperation.SUCCES, "Categorie ajoutee.");
+	historyService.addToHistory(historyRequestDTO);
+	
+	return categoryRepo.save(existingCategory);
+}
 	public Category getCategoryByName(String categoryName) {
 		Category category = categoryRepo.findByNomIgnoreCase(categoryName);
 		if (category == null) {
@@ -45,37 +59,16 @@ public class CategoryServices {
 		return categoryRepo.findById(categoryId).orElseThrow(() -> new NoSuchElementException("Category not found"));
 	}
 	
-	public Category createCategory(CategoryRequestDTO categoryRequestDTO) {
-		if (categoryRequestDTO == null) {
-			User gerant = userRepository.findAllByRoleName(Role.GERANT).getFirst();
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), "Book ID: " + null, TypeOpperation.AJOUT_CATEGORIE, EtatOpperation.ECHEC, "Categorie non ajoutee.");
-			historyService.addToHistory(historyRequestDTO);
-			
-			throw new IllegalArgumentException("This category is invalid , try again");
-		}
-		
-		Category existingCategory = new Category();
-		
-		existingCategory.setNom(categoryRequestDTO.nom());
-		existingCategory.setDescription(categoryRequestDTO.description());
-		
-		User gerant = userRepository.findAllByRoleName(Role.GERANT).getFirst();
-		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), "Book ID: " + null, TypeOpperation.AJOUT_CATEGORIE, EtatOpperation.SUCCES, "Categorie ajoutee.");
-		historyService.addToHistory(historyRequestDTO);
-		
-		return categoryRepo.save(existingCategory);
-	}
-	
 	public Category updateCategory(long id, CategoryRequestDTO categoryRequestDTO) {
 		
 		Category updatedCategory = categoryRepo.findById(id).orElseThrow(() -> new NoSuchElementException("Category not found"));
+		validateCategoryRequest(categoryRequestDTO);
 		
 		updatedCategory.setNom(categoryRequestDTO.nom());
 		updatedCategory.setDescription(categoryRequestDTO.description());
 		
 		User gerant = userRepository.findAllByRoleName(Role.GERANT).getFirst();
-		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), "Book ID: " + null, TypeOpperation.MODIFICATION_CATEGORIE, EtatOpperation.SUCCES, "Categorie modifiee.");
-		historyService.addToHistory(historyRequestDTO);
+		logHistory(gerant.getName(), "Book ID: " + null, TypeOpperation.MODIFICATION_CATEGORIE, EtatOpperation.SUCCES, "Categorie modifiee.");
 		
 		return categoryRepo.save(updatedCategory);
 	}
@@ -84,10 +77,21 @@ public class CategoryServices {
 		Category deletedCategory = categoryRepo.findById(categoryId).orElseThrow(() -> new NoSuchElementException("Category not found"));
 		
 		User gerant = userRepository.findAllByRoleName(Role.GERANT).getFirst();
-		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), "Book ID: " + null, TypeOpperation.SUPPRESSION_CATEGORIE, EtatOpperation.SUCCES, "Categorie supprimee.");
-		historyService.addToHistory(historyRequestDTO);
+		logHistory(gerant.getName(), "Book ID: " + null, TypeOpperation.SUPPRESSION_CATEGORIE, EtatOpperation.SUCCES, "Categorie supprimee.");
 		
 		categoryRepo.delete(deletedCategory);
+	}
+	
+//	UTILITIES METHODS-----------------------------------------------------------------------------------------------------------------------------------
+	private void logHistory(String userName, String bookRef, TypeOpperation type, EtatOpperation etat, String message) {
+		historyService.addToHistory(new HistoryRequestDTO(userName, bookRef, type, etat, message));
+	}
+	
+	private void validateCategoryRequest(CategoryRequestDTO dto) {
+		if (dto == null || dto.nom() == null || dto.nom().isBlank()) {
+			logHistory("Gerant_Name: N/A", "Book ID: N/A", TypeOpperation.AJOUT_CATEGORIE, EtatOpperation.ECHEC, "Catégorie invalide");
+			throw new IllegalArgumentException("La catégorie est invalide");
+		}
 	}
 	
 }

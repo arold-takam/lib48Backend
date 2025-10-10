@@ -38,137 +38,39 @@ public class BorrowBookService {
 	
 //	BORROWING MANAGEMENT-----------------------------------------------------------------------------------------------------------------
 	public void makeBorrow(int gerantID, BorrowRequestDTO borrowRequestDTO)   {
-		Optional<User>abonneOptional = userRepository.findById(borrowRequestDTO.abonneID());
+		User abonne = validateAbonne(borrowRequestDTO.abonneID());
 		
-		if (abonneOptional.isEmpty()) {
-			throw new IllegalArgumentException("Abonne not found with the ID: "+borrowRequestDTO.abonneID());
-		}
-		User abonne = abonneOptional.get();
-		
-		if (!abonne.getRoleName().equals(Role.ABONNE)){
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
-				abonne.getName(),
-				"Book ID: "+borrowRequestDTO.bookID(),
-				TypeOpperation.EMPRUNT_LIVRE,
-				EtatOpperation.ECHEC,
-				"Emprunt rate."
-			);
-			historyService.addToHistory(historyRequestDTO);
-			
-			throw new IllegalArgumentException("User with ID: " + abonne.getId() + " is not an Abonne.");
-		}
-		
-		Optional<User>optionalGerant = userRepository.findById(gerantID);
-		if (optionalGerant.isEmpty() || !optionalGerant.get().getRoleName().equals(Role.GERANT)){
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
-				abonne.getName(),
-				"Book ID: "+borrowRequestDTO.bookID(),
-				TypeOpperation.EMPRUNT_LIVRE,
-				EtatOpperation.ECHEC,
-				"Emprunt rate."
-			);
-			historyService.addToHistory(historyRequestDTO);
-			
-			throw new IllegalArgumentException("Gerant not found with the ID: "+gerantID);
-		}
-		
-		User gerant = optionalGerant.get();
+		User gerant = validateGerant(gerantID);
 		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		User authenticatedUser = (User) authentication.getPrincipal();
 		if (authenticatedUser.getId() != abonne.getId()) {
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
-				abonne.getName(),
-				"Book ID: "+borrowRequestDTO.bookID(),
-				TypeOpperation.EMPRUNT_LIVRE,
-				EtatOpperation.ECHEC,
-				"Emprunt rate."
-			);
-			historyService.addToHistory(historyRequestDTO);
+			logHistory( abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate." );
 			
 			throw new IllegalArgumentException("You are not authorized to borrow this book.");
 		}
 		
 		Optional<Book> livreAEmprunterOpt = bookRepository.findById(borrowRequestDTO.bookID());
 		if (livreAEmprunterOpt.isEmpty()) {
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
-				abonne.getName(),
-				"Book ID: "+borrowRequestDTO.bookID(),
-				TypeOpperation.EMPRUNT_LIVRE,
-				EtatOpperation.ECHEC,
-				"Emprunt rate."
-			);
-			historyService.addToHistory(historyRequestDTO);
+			logHistory( abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate." );
 			
 			throw new IllegalArgumentException("Book not found with the ID: " + borrowRequestDTO.bookID());
 		}
 		
 		Book livreAEmprunter = livreAEmprunterOpt.get();
 		if (!livreAEmprunter.isEstDisponible()) {
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
-				abonne.getName(),
-				"Book ID: "+borrowRequestDTO.bookID(),
-				TypeOpperation.EMPRUNT_LIVRE,
-				EtatOpperation.ECHEC,
-				"Emprunt rate."
-			);
-			historyService.addToHistory(historyRequestDTO);
+			logHistory(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate." );
 			
 			throw new IllegalArgumentException("This book is not available.");
 		}
 		
 		CarteAbonnement carteAbonnement = abonne.getCarteAbonnement();
-
-		if (carteAbonnement == null){
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
-				abonne.getName(),
-				"Book ID: "+borrowRequestDTO.bookID(),
-				TypeOpperation.EMPRUNT_LIVRE,
-				EtatOpperation.ECHEC,
-				"Emprunt rate."
-			);
-			historyService.addToHistory(historyRequestDTO);
-			
-			throw new IllegalArgumentException("This abonne has no card yet.");
-		}
-		
-		if (!carteAbonnement.isAvailable()){
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
-				abonne.getName(),
-				"Book ID: "+borrowRequestDTO.bookID(),
-				TypeOpperation.EMPRUNT_LIVRE,
-				EtatOpperation.ECHEC,
-				"Emprunt rate."
-			);
-			historyService.addToHistory(historyRequestDTO);
-			
-			throw new IllegalArgumentException("This card is not available.");
-		}
-		
-		if (carteAbonnement.getDuree() <= 1) {
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
-				abonne.getName(),
-				"Book ID: "+borrowRequestDTO.bookID(),
-				TypeOpperation.EMPRUNT_LIVRE,
-				EtatOpperation.ECHEC,
-				"Emprunt rate."
-			);
-			historyService.addToHistory(historyRequestDTO);
-			
-			throw new IllegalArgumentException("Your card availability is over.");
-		}
+		validateCarte(carteAbonnement, abonne, borrowRequestDTO.bookID());
 		
 		Book bookToBorrow = bookServices.getBookId(borrowRequestDTO.bookID());
 		
 		if (!bookToBorrow.isEstDisponible()){
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
-				abonne.getName(),
-				"Book ID: "+borrowRequestDTO.bookID(),
-				TypeOpperation.EMPRUNT_LIVRE,
-				EtatOpperation.ECHEC,
-				"Emprunt rate."
-			);
-			historyService.addToHistory(historyRequestDTO);
+			logHistory( abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Emprunt rate." );
 			
 			throw  new IllegalArgumentException("This book is not available.");
 		}
@@ -184,13 +86,7 @@ public class BorrowBookService {
 		borrowBook.setDateEmprunt(LocalDate.now());
 		borrowBook.setDelaiEmprunt(borrowRequestDTO.delaiEmprunt());
 		
-		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
-			abonne.getName(),
-			"Book ID: "+borrowRequestDTO.bookID(),
-			TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.SUCCES,
-			"Emprunt reussit."
-		);
-		historyService.addToHistory(historyRequestDTO);
+		logHistory(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.SUCCES, "Emprunt reussit." );
 
 		borrowBookRepository.save(borrowBook);
 		
@@ -199,17 +95,14 @@ public class BorrowBookService {
 	public BorrowResponseDTO getBorrowByID(int gerantID,int borrowID, int abonneID){
 
 		//remplacer l'idée du gérant par son mot de passe
-		User gerant = userRepository.findById(gerantID).orElseThrow(
-				() -> new IllegalArgumentException("There is no Gerant with ID: "+gerantID)
-		);
-		Optional<BorrowBook>optionalBorrowBook = borrowBookRepository.findByIdAndAbonne_Id(borrowID, abonneID);
+		User gerant = validateGerant(gerantID);
 		
+		Optional<BorrowBook>optionalBorrowBook = borrowBookRepository.findByIdAndAbonne_Id(borrowID, abonneID);
 		if (optionalBorrowBook.isEmpty()){
 			throw new IllegalArgumentException("No borrow for this user yet");
 		}
 		
 		BorrowBook borrowBook = optionalBorrowBook.get();
-		
 		if (borrowBook.getGerant().getId() != gerantID){
 			throw new IllegalArgumentException("This operation is only for Gerant.");
 		}
@@ -226,11 +119,7 @@ public class BorrowBookService {
 	
 	public List<BorrowResponseDTO>getAllBorrows(int gerantID){
 		
-		User gerant = userRepository.findById(gerantID).orElseThrow(() -> new IllegalArgumentException("Gerant not found with the ID: " + gerantID));
-	
-		if (gerant.getRoleName() != Role.GERANT){
-			throw new IllegalArgumentException("This operation is only for Gerant.");
-		}
+		User gerant =validateGerant(gerantID);
 		
 		List<BorrowBook>borrowBookList = borrowBookRepository.findAllByGerant_Id(gerantID);
 		
@@ -254,9 +143,8 @@ public class BorrowBookService {
 	}
 
 	public List<BorrowResponseDTO>getAllBorrowsByAbonne_Id(int abonneID){
-		User abonne = userRepository.findById(abonneID).orElseThrow(
-				() -> new IllegalArgumentException("There is no User with ID: "+abonneID)
-		);
+		User abonne = validateAbonne(abonneID);
+		
 		List<BorrowBook> borrowBookList = borrowBookRepository.findAllByAbonne_Id(abonne.getId());
 
 		List<BorrowResponseDTO>borrowResponseDTOList2 = new ArrayList<>();
@@ -276,4 +164,37 @@ public class BorrowBookService {
 		}
 		return borrowResponseDTOList2;
 	}
+	
+//	UTILITIES METHODS---------------------------------------------------------------------------------------------------------------------------------
+	private void logHistory(String userName, String bookRef, TypeOpperation type, EtatOpperation etat, String message) {
+		historyService.addToHistory(new HistoryRequestDTO(userName, bookRef, type, etat, message));
+	}
+	
+	private User validateAbonne(int abonneID) {
+		User abonne = userRepository.findById(abonneID)
+			              .orElseThrow(() -> new IllegalArgumentException("Abonné introuvable"));
+		if (abonne.getRoleName() != Role.ABONNE) {
+			logHistory(abonne.getName(), "Abonne ID: " + abonneID, TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Rôle invalide");
+			throw new IllegalArgumentException("L'utilisateur n'est pas un abonné");
+		}
+		return abonne;
+	}
+	
+	private User validateGerant(int gerantID) {
+		User gerant = userRepository.findById(gerantID)
+			              .orElseThrow(() -> new IllegalArgumentException("Gérant introuvable"));
+		if (gerant.getRoleName() != Role.GERANT) {
+			throw new IllegalArgumentException("L'utilisateur n'est pas un gérant");
+		}
+		return gerant;
+	}
+	
+	private void validateCarte(CarteAbonnement carte, User abonne, long bookID) {
+		if (carte == null || !carte.isAvailable() || carte.getDuree() <= 1) {
+			logHistory(abonne.getName(), "Book ID: " + bookID, TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.ECHEC, "Carte invalide");
+			throw new IllegalArgumentException("Carte d'abonnement invalide ou expirée");
+		}
+	}
+	
+	
 }

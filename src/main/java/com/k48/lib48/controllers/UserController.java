@@ -75,7 +75,6 @@ public class UserController {
 		}
 	}
 	
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/{userID}", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<User>getUserID(@PathVariable int userID){
 		try {
@@ -91,7 +90,6 @@ public class UserController {
 		}
 	}
 	
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/byRole/{role}", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<User>getUserRoleAndName(@PathVariable Role role, @RequestParam String name){
 		try {
@@ -107,7 +105,6 @@ public class UserController {
 		}
 	}
 	
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<User>>getAllUsers(){
 		List<User>userList = userServices.getAllUsers();
@@ -115,7 +112,6 @@ public class UserController {
 		return new ResponseEntity<>(userList, HttpStatus.OK);
 	}
 	
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/all/{role}", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<User>>getAllUsersRole(@PathVariable Role role){
 		List<User>userList = userServices.getAllUsersRole(role);
@@ -138,8 +134,8 @@ public class UserController {
 		}
 	}
 	
-	@DeleteMapping(path = "/delete/{userID}")
 	@PreAuthorize("hasRole('GERANT') or authentication.principal.id == #userID")
+	@DeleteMapping(path = "/delete/{userID}")
 	public ResponseEntity<Void>deleteUser(@PathVariable int userID){
 		try {
 			boolean delete = userServices.deleteUser(userID);
@@ -176,7 +172,6 @@ public class UserController {
 		}
 	}
 	
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/card/{abonneID}", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<CarteAbonnement>getCardID(@PathVariable int abonneID){
 		try {
@@ -192,7 +187,6 @@ public class UserController {
 		}
 	}
 	
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/card/byGerant/{gerantID}")
 	public ResponseEntity<List<CarteAbonnement>>getAllCards(@PathVariable int gerantID){
 		List<CarteAbonnement>carteAbonnementList = carteAbonnementService.getAllCards(gerantID);

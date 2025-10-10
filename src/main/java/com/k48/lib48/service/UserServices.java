@@ -122,25 +122,13 @@ public class UserServices {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		User aunthenticatedUser = (User) authentication.getPrincipal();
 		if (!aunthenticatedUser.getMail().equalsIgnoreCase(user.getMail())){
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
-				user.getName(),
-				"Book ID: N/A",
-				TypeOpperation.MODIFICATION_COMPTE,
-				EtatOpperation.ECHEC,
-				"Utilisateur non mis a jour.");
-			historyService.addToHistory(historyRequestDTO);
+			logHistory( user.getName(), "Book ID: N/A", TypeOpperation.MODIFICATION_COMPTE, EtatOpperation.ECHEC, "Utilisateur non mis a jour.");
 			
 			throw new IllegalArgumentException("You are not authorized to update this user.");
 		}
 		
 		if (existingUser != null && existingUser.getId() != userID ) {
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
-				user.getName(),
-				"Book ID: N/A",
-				TypeOpperation.MODIFICATION_COMPTE,
-				EtatOpperation.ECHEC,
-				"Utilisateur non mis a jour.");
-			historyService.addToHistory(historyRequestDTO);
+			logHistory( user.getName(), "Book ID: N/A", TypeOpperation.MODIFICATION_COMPTE, EtatOpperation.ECHEC, "Utilisateur non mis a jour.");
 			
 			throw new IllegalArgumentException("Email already in use.");
 		}
@@ -156,27 +144,14 @@ public class UserServices {
 		
 		userRepository.save(user);
 		
-		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
-			userRequestDTO.name(),
-			"Book ID: N/A",
-			TypeOpperation.MODIFICATION_COMPTE,
-			EtatOpperation.SUCCES,
-			"Utilisateur  mis a jour.");
-		historyService.addToHistory(historyRequestDTO);
+		logHistory( userRequestDTO.name(), "Book ID: N/A", TypeOpperation.MODIFICATION_COMPTE, EtatOpperation.SUCCES, "Utilisateur  mis a jour.");
 	}
 	
 	@Transactional
 	public boolean deleteUser(int userID){
 		User user= userRepository.findById(userID).orElseThrow(()-> new IllegalArgumentException("User with the ID: "+userID+" not found"));
 		
-		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(
-			user.getName(),
-			"Book ID:  N/A",
-			TypeOpperation.SUPRESSION_COMPTE,
-			EtatOpperation.SUCCES,
-			"Utilisateur  supprime."
-		);
-		historyService.addToHistory(historyRequestDTO);
+		logHistory( user.getName(), "Book ID:  N/A", TypeOpperation.SUPRESSION_COMPTE, EtatOpperation.SUCCES, "Utilisateur  supprime." );
 		
 //		DELETION PROCESS TO IMPROVE IN THE V2)--------------------------------------------
 		returnBookRepository.deleteAllByBorrowBookConcerned_Abonne(user);
@@ -186,6 +161,11 @@ public class UserServices {
 		userRepository.delete(user);
 		
 		return true;
+	}
+	
+//	UTILITIES METHODS-----------------------------------------------------------------------------------------------------------------------
+	private void logHistory(String userName, String bookRef, TypeOpperation type, EtatOpperation etat, String message) {
+		historyService.addToHistory(new HistoryRequestDTO(userName, bookRef, type, etat, message));
 	}
 	
 }

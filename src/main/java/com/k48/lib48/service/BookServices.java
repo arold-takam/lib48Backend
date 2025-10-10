@@ -45,19 +45,16 @@ public class BookServices {
 	public Book createBook(long idCategory, BookRequestDTO bookRequestDTO, MultipartFile coverImage) {
 		
 		if (bookRepository.existsByTitre(bookRequestDTO.titre())){
-			User gerant = userRepository.findAllByRoleName(Role.GERANT).getFirst();
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), bookRequestDTO.titre(), TypeOpperation.AJOUTER_LIVRE, EtatOpperation.ECHEC, "Nouvel ajout rate.");
-			historyService.addToHistory(historyRequestDTO);
+			User gerant = getGerant();
+			logHistory(gerant.getName(), bookRequestDTO.titre(), TypeOpperation.AJOUTER_LIVRE, EtatOpperation.ECHEC, "Nouvel ajout rate.");
 			
 			throw new IllegalArgumentException("Book with title: "+bookRequestDTO.titre()+" already exist.");
 		}
 	
 	// Validation du titre: il ne peut être ni null ni vide
 		if (bookRequestDTO == null || bookRequestDTO.titre() == null || bookRequestDTO.titre().isBlank()) {
-			User gerant = userRepository.findAllByRoleName(Role.GERANT).getFirst();
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), bookRequestDTO.titre(), TypeOpperation.AJOUTER_LIVRE, EtatOpperation.ECHEC, "Nouvel ajout rate.");
-			historyService.addToHistory(historyRequestDTO);
-			
+			User gerant = getGerant();
+			logHistory(gerant.getName(), bookRequestDTO.titre(), TypeOpperation.AJOUTER_LIVRE, EtatOpperation.ECHEC, "Nouvel ajout rate.");
 			
 			throw new IllegalArgumentException("The Title cannot be null or empty");
 		}
@@ -80,9 +77,8 @@ public class BookServices {
 			book.setUrlCoverImage(coverImageURL);
 		}
 		
-		User gerant = userRepository.findAllByRoleName(Role.GERANT).getFirst();
-		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), bookRequestDTO.titre(), TypeOpperation.AJOUTER_LIVRE, EtatOpperation.SUCCES, "Nouvel ajout valide.");
-		historyService.addToHistory( historyRequestDTO);
+		User gerant = getGerant();
+		logHistory(gerant.getName(), bookRequestDTO.titre(), TypeOpperation.AJOUTER_LIVRE, EtatOpperation.SUCCES, "Nouvel ajout valide.");
 		
 		return bookRepository.save(book);
 		
@@ -130,31 +126,36 @@ public class BookServices {
 			existingBook.setUrlCoverImage(coverImageURL);
 		}
 		
-		User gerant = userRepository.findAllByRoleName(Role.GERANT).getFirst();
-		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), bookUpDateDTO.titre(), TypeOpperation.MODIFIER_LIVRE, EtatOpperation.SUCCES, "Mise a jour du livre reussit.");
-		historyService.addToHistory(historyRequestDTO);
+		User gerant = getGerant();
+		
+		logHistory(gerant.getName(), bookUpDateDTO.titre(), TypeOpperation.MODIFIER_LIVRE, EtatOpperation.SUCCES, "Mise a jour du livre reussit.");
 		
 		return bookRepository.save(existingBook);
 	}
 	
 	public void deleteBook(long id) {
 		if (!bookRepository.existsById(id)) {
-			User gerant = userRepository.findAllByRoleName(Role.GERANT).getFirst();
-			HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), "Book to Delete", TypeOpperation.SUPPRIMMER_LIVRE, EtatOpperation.ECHEC, "Supression ratee.");
-			historyService.addToHistory(historyRequestDTO);
+			User gerant = getGerant();
+			logHistory(gerant.getName(), "Book to Delete", TypeOpperation.SUPPRIMMER_LIVRE, EtatOpperation.ECHEC, "Supression ratee.");
 			
 			throw new NoSuchElementException("Book not found");
 		}
 		
-		User gerant = userRepository.findAllByRoleName(Role.GERANT).getFirst();
-		HistoryRequestDTO historyRequestDTO = new HistoryRequestDTO(gerant.getName(), "Book to Delete", TypeOpperation.SUPPRIMMER_LIVRE, EtatOpperation.SUCCES, "Supression reussie.");
-		historyService.addToHistory(historyRequestDTO);
+		if (!bookRepository.findById(id).get().isEstDisponible()){
+			User gerant = getGerant();
+			logHistory(gerant.getName(), "Book to Delete", TypeOpperation.SUPPRIMMER_LIVRE, EtatOpperation.ECHEC, "Supression ratee.");
+			
+			throw new IllegalArgumentException("Book is not available.");
+		}
+		
+		User gerant = getGerant();
+		logHistory(gerant.getName(), "Book to Delete", TypeOpperation.SUPPRIMMER_LIVRE, EtatOpperation.SUCCES, "Supression reussie.");
 		
 		bookRepository.deleteById(id);
 	}
 	
 	//-------------------UTILITIES METHODS-----------------------------------------------
-    public String saveFile(MultipartFile file) {
+        public String saveFile(MultipartFile file) {
 		try {
 			String originalFileName = file.getOriginalFilename();
 			String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
@@ -177,4 +178,16 @@ public class BookServices {
 			throw new RuntimeException("Could not save the file.", e);
 		}
 	}
+	
+	private void logHistory(String userName, String bookTitre, TypeOpperation type, EtatOpperation etat, String message) {
+		HistoryRequestDTO dto = new HistoryRequestDTO(userName, bookTitre, type, etat, message);
+		historyService.addToHistory(dto);
+	}
+	
+	private User getGerant() {
+		return userRepository.findAllByRoleName(Role.GERANT).stream()
+			       .findFirst()
+			       .orElseThrow(() -> new IllegalStateException("Aucun gérant disponible"));
+	}
+	
 }

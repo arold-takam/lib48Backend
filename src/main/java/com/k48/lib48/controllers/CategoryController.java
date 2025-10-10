@@ -45,7 +45,6 @@ public class CategoryController {
         }
     }
 
-    @PreAuthorize("hasRole('GERANT')")
     @GetMapping(path = "/get/All", produces= APPLICATION_JSON_VALUE)
     public List<Category> getAllCategories() {
         return categoryServ.getAllCategories();
