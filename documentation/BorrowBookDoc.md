@@ -8,13 +8,13 @@ Ce contrôleur gère la création et la consultation des enregistrements d'empru
 
 ### `POST /borrowBook/create/{gerantID}`
 
-| Champ            | Description                                                                                                                                 |
-|------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| **But**          | Permettre à un **Abonné** d’initier une demande d’emprunt. L’emprunt est enregistré après validation du Gérant.                            |
-| **Chemin**       | `POST` sur `{{baseURL}}/borrowBook/create/{gerantID}`                                                                                       |
-| **UX Relatif**   | L’Abonné soumet la demande. Le Gérant est notifié et, après validation physique/hors-API, l’Abonné est invité à récupérer le livre.        |
+| Champ            | Description                                                                                                                                           |
+|------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **But**          | Permettre à un **Abonné** d’initier une demande d’emprunt. L’emprunt est enregistré après validation du Gérant.                                       |
+| **Chemin**       | `POST` sur `{{baseURL}}/borrowBook/create/{gerantID}`                                                                                                 |
+| **UX Relatif**   | L’Abonné soumet la demande. Le Gérant est notifié et, après validation physique/hors-API, l’Abonné est invité à récupérer le livre.                   |
 | **Contraintes**  | Rôle requis : `ABONNE`. Le livre doit être **disponible**. L’Abonné et le Gérant doivent être **actifs**. La carte d’abonnement doit être **valide**. |
-| **Codes Retour** | `201 Created`, `400 Bad Request` (livre non disponible, limite atteinte, carte invalide, etc.)                                              |
+| **Codes Retour** | `201 Created`, `400 Bad Request` (livre non disponible, limite atteinte, carte invalide, etc.)                                                        |
 
 ---
 
@@ -46,10 +46,10 @@ Ce contrôleur gère la création et la consultation des enregistrements d'empru
 
 ### `GET /borrowBook/get/all/byAbonneID/{abonneId}`
 
-| Champ            | Description                                                                                          |
-|------------------|------------------------------------------------------------------------------------------------------|
-| **But**          | Récupérer l’**historique complet** des emprunts d’un Abonné.                                         |
-| **Chemin**       | `GET` sur `{{baseURL}}/borrowBook/get/all/byAbonneID/{abonneId}`                                     |
-| **UX Relatif**   | Utilisé par le Gérant pour consulter la **fiche client** d’un Abonné (retards, livres détenus, etc.).|
-| **Contraintes**  | Rôle requis : `GERANT`. L’ID de l’Abonné doit exister.                                               |
-| **Codes Retour** | `200 OK`, `404 Not Found` (abonné inexistant)                                                        |
+| Champ            | Description                                                                                           |
+|------------------|-------------------------------------------------------------------------------------------------------|
+| **But**          | Récupérer l’**historique complet** des emprunts d’un Abonné.                                          |
+| **Chemin**       | `GET` sur `{{baseURL}}/borrowBook/get/all/byAbonneID/{abonneId}`                                      |
+| **UX Relatif**   | Utilisé par le Gérant pour consulter la **fiche client** d’un Abonné (retards, livres détenus, etc.). |
+| **Contraintes**  | Rôle requis : `GERANT`. L’ID de l’Abonné doit exister.                                                |
+| **Codes Retour** | `200 OK`, `404 Not Found` (abonné inexistant)                                                         |

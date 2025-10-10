@@ -22,13 +22,13 @@ Ce contrôleur gère la consultation du journal des opérations de la librairie.
 
 ### `GET /history/get/all/byTypeOperation?typeOpperation={type}`
 
-| Champ            | Description                                                                                          |
-|------------------|------------------------------------------------------------------------------------------------------|
-| **But**          | Filtrer les opérations selon leur **nature** (`TypeOpperation` : Prêt, Retour, Ajout Livre, etc.).  |
-| **Chemin**       | `GET` sur `{{baseURL}}/history/get/all/byTypeOperation?typeOpperation={type}`                        |
-| **UX Relatif**   | Utilisé pour obtenir un aperçu rapide d’une catégorie d’activité (ex : prêts du mois).               |
-| **Contraintes**  | Rôle requis : `GERANT`. Le paramètre `typeOpperation` est obligatoire.                               |
-| **Codes Retour** | `200 OK` (retourne `[]` même si vide)                                                                |
+| Champ            | Description                                                                                        |
+|------------------|----------------------------------------------------------------------------------------------------|
+| **But**          | Filtrer les opérations selon leur **nature** (`TypeOpperation` : Prêt, Retour, Ajout Livre, etc.). |
+| **Chemin**       | `GET` sur `{{baseURL}}/history/get/all/byTypeOperation?typeOpperation={type}`                      |
+| **UX Relatif**   | Utilisé pour obtenir un aperçu rapide d’une catégorie d’activité (ex : prêts du mois).             |
+| **Contraintes**  | Rôle requis : `GERANT`. Le paramètre `typeOpperation` est obligatoire.                             |
+| **Codes Retour** | `200 OK` (retourne `[]` même si vide)                                                              |
 
 ---
 
@@ -36,13 +36,13 @@ Ce contrôleur gère la consultation du journal des opérations de la librairie.
 
 ### `GET /history/All/byEtat?etatOpperation={etat}`
 
-| Champ            | Description                                                                                          |
-|------------------|------------------------------------------------------------------------------------------------------|
+| Champ            | Description                                                                                              |
+|------------------|:---------------------------------------------------------------------------------------------------------|
 | **But**          | Filtrer les opérations selon leur **statut d’exécution** (`EtatOpperation` : Succès, Échec, En attente). |
-| **Chemin**       | `GET` sur `{{baseURL}}/history/All/byEtat?etatOpperation={etat}`                                     |
-| **UX Relatif**   | Utilisé comme tableau de bord de **surveillance** pour identifier les anomalies ou blocages.         |
-| **Contraintes**  | Rôle requis : `GERANT`. Le paramètre `etatOpperation` est obligatoire.                               |
-| **Codes Retour** | `200 OK` (retourne `[]` même si vide)                                                                |
+| **Chemin**       | `GET` sur `{{baseURL}}/history/All/byEtat?etatOpperation={etat}`                                         |
+| **UX Relatif**   | Utilisé comme tableau de bord de **surveillance** pour identifier les anomalies ou blocages.             |
+| **Contraintes**  | Rôle requis : `GERANT`. Le paramètre `etatOpperation` est obligatoire.                                   |
+| **Codes Retour** | `200 OK` (retourne `[]` même si vide)                                                                    |
 
 ---
 

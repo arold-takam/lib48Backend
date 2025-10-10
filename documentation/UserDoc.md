@@ -6,16 +6,16 @@ Ce contrôleur gère l’authentification, la gestion des utilisateurs (Gérants
 
 ## 🔹 1. Gestion des Utilisateurs et Authentification
 
-| Endpoint                     | But                                                           | Rôle Requis | Contraintes Principales                                                                 | Codes de Retour Clés                                      |
-|------------------------------|---------------------------------------------------------------|-------------|------------------------------------------------------------------------------------------|------------------------------------------------------------|
-| `POST /register`             | Créer un compte utilisateur (Abonné ou Gérant).               | Public      | `mail` unique, `UserRequestDTO` valide, `roleName` obligatoire.                         | `201 Created`, `400 Bad Request` (email déjà utilisé)      |
-| `POST /login`                | Authentifier un utilisateur et retourner un token de session. | Public      | `mail` et `password` doivent correspondre.                                               | `200 OK`, `401 Unauthorized`                               |
-| `GET /get/{userID}`          | Récupérer les détails d’un utilisateur par ID.                | GERANT      | L’ID doit exister.                                                                      | `200 OK`, `404 Not Found`                                  |
-| `GET /get/byRole`            | Rechercher un utilisateur par rôle et nom.                    | GERANT      | Le rôle et le nom doivent exister.                                                      | `200 OK`, `404 Not Found`                                  |
-| `GET /get`                   | Obtenir la liste de tous les utilisateurs.                    | GERANT      | Utilisé pour le tableau de bord d’administration.                                       | `200 OK`                                                   |
-| `GET /get/all/{role}`        | Obtenir la liste des utilisateurs d’un rôle spécifique.       | GERANT      | Le rôle doit exister (`ABONNE`, `GERANT`).                                              | `200 OK`                                                   |
-| `PUT /update/{userID}`       | Mettre à jour les informations d’un utilisateur.              | Public      | L’ID doit exister. `roleName` obligatoire. Validation de `UserRequestDTO`.              | `200 OK`, `404 Not Found`, `400 Bad Request`               |
-| `DELETE /delete/{userID}`    | Supprimer un compte utilisateur.                              | GERANT ou l’utilisateur lui-même | L’utilisateur doit exister. **Interdit si emprunts en cours.** | `204 No Content`, `404 Not Found`, `401 Unauthorized`      |
+| Endpoint                  | But                                                           | Rôle Requis                      | Contraintes Principales                                                    | Codes de Retour Clés                                  |
+|---------------------------|---------------------------------------------------------------|----------------------------------|----------------------------------------------------------------------------|-------------------------------------------------------|
+| `POST /register`          | Créer un compte utilisateur (Abonné ou Gérant).               | Public                           | `mail` unique, `UserRequestDTO` valide, `roleName` obligatoire.            | `201 Created`, `400 Bad Request` (email déjà utilisé) |
+| `POST /login`             | Authentifier un utilisateur et retourner un token de session. | Public                           | `mail` et `password` doivent correspondre.                                 | `200 OK`, `401 Unauthorized`                          |
+| `GET /get/{userID}`       | Récupérer les détails d’un utilisateur par ID.                | GERANT                           | L’ID doit exister.                                                         | `200 OK`, `404 Not Found`                             |
+| `GET /get/byRole`         | Rechercher un utilisateur par rôle et nom.                    | GERANT                           | Le rôle et le nom doivent exister.                                         | `200 OK`, `404 Not Found`                             |
+| `GET /get`                | Obtenir la liste de tous les utilisateurs.                    | GERANT                           | Utilisé pour le tableau de bord d’administration.                          | `200 OK`                                              |
+| `GET /get/all/{role}`     | Obtenir la liste des utilisateurs d’un rôle spécifique.       | GERANT                           | Le rôle doit exister (`ABONNE`, `GERANT`).                                 | `200 OK`                                              |
+| `PUT /update/{userID}`    | Mettre à jour les informations d’un utilisateur.              | Public                           | L’ID doit exister. `roleName` obligatoire. Validation de `UserRequestDTO`. | `200 OK`, `404 Not Found`, `400 Bad Request`          |
+| `DELETE /delete/{userID}` | Supprimer un compte utilisateur.                              | GERANT ou l’utilisateur lui-même | L’utilisateur doit exister. **Interdit si emprunts en cours.**             | `204 No Content`, `404 Not Found`, `401 Unauthorized` |
 
 ---
 
@@ -31,9 +31,9 @@ Ce contrôleur gère l’authentification, la gestion des utilisateurs (Gérants
 
 ## 🔹 3. Gestion des Cartes (Gérant)
 
-| Endpoint                          | But                                                       | Rôle Requis | Contraintes Principales                                                  | Codes de Retour Clés                          |
-|-----------------------------------|------------------------------------------------------------|-------------|---------------------------------------------------------------------------|------------------------------------------------|
-| `GET /get/card/{abonneID}`        | Récupérer les détails de la carte d’un Abonné.            | GERANT      | L’ID de l’Abonné doit exister et avoir une carte.                        | `200 OK`, `404 Not Found`                     |
-| `GET /get/card/byGerant`          | Obtenir la liste de toutes les cartes d’abonnement.       | GERANT      | Le `gerantID` est utilisé pour valider l’opérateur.                      | `200 OK`                                      |
-| `PUT /revoque/card/{abonneID}`    | Révoquer le droit d’emprunt d’un Abonné.                  | GERANT      | L’Abonné et le Gérant doivent exister. Met à jour le statut à "révoqué".| `200 OK`, `404 Not Found`                     |
+| Endpoint                       | But                                                 | Rôle Requis | Contraintes Principales                                                  | Codes de Retour Clés      |
+|--------------------------------|-----------------------------------------------------|-------------|--------------------------------------------------------------------------|---------------------------|
+| `GET /get/card/{abonneID}`     | Récupérer les détails de la carte d’un Abonné.      | GERANT      | L’ID de l’Abonné doit exister et avoir une carte.                        | `200 OK`, `404 Not Found` |
+| `GET /get/card/byGerant`       | Obtenir la liste de toutes les cartes d’abonnement. | GERANT      | Le `gerantID` est utilisé pour valider l’opérateur.                      | `200 OK`                  |
+| `PUT /revoque/card/{abonneID}` | Révoquer le droit d’emprunt d’un Abonné.            | GERANT      | L’Abonné et le Gérant doivent exister. Met à jour le statut à "révoqué". | `200 OK`, `404 Not Found` |
  

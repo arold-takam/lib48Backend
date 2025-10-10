@@ -72,10 +72,10 @@ Ce contrôleur gère les opérations CRUD sur les catégories de livres. Les end
 
 ### `DELETE /categories/delete/{id}`
 
-| Champ            | Description                                                                                          |
-|------------------|------------------------------------------------------------------------------------------------------|
-| **But**          | Supprimer une catégorie obsolète ou erronée.                                                        |
-| **Chemin**       | `DELETE` sur `{{baseURL}}/categories/delete/{id}`                                                    |
-| **UX Relatif**   | La catégorie disparaît des menus et filtres. Opération irréversible.                                 |
-| **Contraintes**  | Rôle requis : `GERANT`. L’ID doit exister. **Interdit si des livres sont encore associés.**         |
-| **Codes Retour** | `204 No Content`, `400 Bad Request` (catégorie inexistante ou suppression interdite)                |
+| Champ            | Description                                                                                 |
+|------------------|---------------------------------------------------------------------------------------------|
+| **But**          | Supprimer une catégorie obsolète ou erronée.                                                |
+| **Chemin**       | `DELETE` sur `{{baseURL}}/categories/delete/{id}`                                           |
+| **UX Relatif**   | La catégorie disparaît des menus et filtres. Opération irréversible.                        |
+| **Contraintes**  | Rôle requis : `GERANT`. L’ID doit exister. **Interdit si des livres sont encore associés.** |
+| **Codes Retour** | `204 No Content`, `400 Bad Request` (catégorie inexistante ou suppression interdite)        |
