@@ -40,7 +40,6 @@ public class ReturnBookController {
 		}
 	}
 	
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/{gerantID}")
 	public ResponseEntity<ReturnResponseDTO> getReturnByID(@PathVariable int gerantID, @RequestParam int returnID){
 		try {
@@ -56,7 +55,6 @@ public class ReturnBookController {
 		}
 	}
 	
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/byAbonneID/{gerantID}")
 	public ResponseEntity<List<ReturnResponseDTO>> getReturnByAbonneID(@PathVariable int gerantID, @RequestParam int abonneID){
 		try {
@@ -72,14 +70,12 @@ public class ReturnBookController {
 		}
 	}
 	
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/all/{gerantID}")
 	public ResponseEntity<List<ReturnResponseDTO>> getAllReturns(@PathVariable int gerantID){
 		
 		return new ResponseEntity<>(returnBookService.getAllReturns(gerantID), HttpStatus.OK);
 	}
 	
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/all/byDate/{gerantID}")
 	public ResponseEntity<List<ReturnResponseDTO>> getAllReturnsByDate(@PathVariable int gerantID, @RequestParam LocalDate dateRetour){
 		

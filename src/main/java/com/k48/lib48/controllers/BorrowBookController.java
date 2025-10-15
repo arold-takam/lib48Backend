@@ -38,7 +38,6 @@ public class BorrowBookController {
 		}
 	}
 	
-	 @PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/{gerantID}")
 	public ResponseEntity<BorrowResponseDTO> getBorrowByID(@PathVariable int gerantID, @RequestParam int borrowID,@RequestParam int abonneID){
 		try {
@@ -54,7 +53,6 @@ public class BorrowBookController {
 		}
 	}
 	
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/all/{gerantID}")
 	public ResponseEntity<List<BorrowResponseDTO> >getAllBorrows(@PathVariable int gerantID){
 		
@@ -72,7 +70,6 @@ public class BorrowBookController {
 		
 	}
 
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping(path = "/get/all/byAbonneID/{abonneId}")
 	public ResponseEntity<List<BorrowResponseDTO>>getAllBorrowsByAbonne_Id(@PathVariable int abonneId){
 		try {

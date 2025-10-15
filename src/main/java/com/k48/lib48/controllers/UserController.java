@@ -187,9 +187,9 @@ public class UserController {
 		}
 	}
 	
-	@GetMapping(path = "/get/card/byGerant/{gerantID}")
-	public ResponseEntity<List<CarteAbonnement>>getAllCards(@PathVariable int gerantID){
-		List<CarteAbonnement>carteAbonnementList = carteAbonnementService.getAllCards(gerantID);
+	@GetMapping(path = "/get/all/card")
+	public ResponseEntity<List<CarteAbonnement>>getAllCards(){
+		List<CarteAbonnement>carteAbonnementList = carteAbonnementService.getAllCards();
 		
 		return new ResponseEntity<>(carteAbonnementList, HttpStatus.OK);
 	}

@@ -93,10 +93,6 @@ public class BorrowBookService {
 	}
 	
 	public BorrowResponseDTO getBorrowByID(int gerantID,int borrowID, int abonneID){
-
-		//remplacer l'idée du gérant par son mot de passe
-		User gerant = validateGerant(gerantID);
-		
 		Optional<BorrowBook>optionalBorrowBook = borrowBookRepository.findByIdAndAbonne_Id(borrowID, abonneID);
 		if (optionalBorrowBook.isEmpty()){
 			throw new IllegalArgumentException("No borrow for this user yet");

@@ -89,12 +89,7 @@ public class CarteAbonnementService {
 		return carteAbonnement;
 	}
 	
-	public List<CarteAbonnement> getAllCards(int gerantID) {
-		User gerant = userRepository.findById(gerantID).orElseThrow(() -> new IllegalArgumentException("Gerant not found with the ID: " + gerantID));
-		
-		if (gerant.getRoleName().equals(Role.ABONNE)) {
-			throw new IllegalArgumentException("This is only for gerant access");
-		}
+	public List<CarteAbonnement> getAllCards() {
 		
 		return carteAbonnementRepository.findAll();
 	}

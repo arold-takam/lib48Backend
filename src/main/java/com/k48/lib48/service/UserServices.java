@@ -68,7 +68,8 @@ public class UserServices {
 			throw new IllegalArgumentException("Email already in use.");
 		}
 		
-		user.setName(userRequestDTO.name());
+		String userName = userRequestDTO.name().trim();
+		user.setName(userName);
 		user.setMail(userRequestDTO.mail());
 		if (!userRequestDTO.password().startsWith("$2a$")){
 			user.setPassword(passwordEncoder.encode(userRequestDTO.password()));
@@ -98,9 +99,8 @@ public class UserServices {
 	
 	public User getUserRoleAndName(String name, Role role){
 		User user = userRepository.findByNameIgnoreCaseAndRoleName(name, role);
-		
 		if (user == null){
-			throw new IllegalArgumentException("No  "+role+" found at thz name of: "+name);
+			throw new IllegalArgumentException("No  "+role+" found at the name of: "+name);
 		}
 		
 		return user;

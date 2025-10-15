@@ -27,7 +27,6 @@ public class HistoryController {
 	}
 	
 	//    ----------------------------------------------------------------------------------------------------------------------------------------
-   @PreAuthorize("hasRole('GERANT')")
     @GetMapping(path = "/get/{historyID}", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<History> getHistoryById(@PathVariable int historyID){
             try {
@@ -52,7 +51,6 @@ public class HistoryController {
 		return new ResponseEntity<>(historyService.findByEtatOperation(etatOpperation), HttpStatus.OK);
 	}
 	
-	@PreAuthorize("hasRole('GERANT')")
 	@GetMapping("/get/user")
 	public ResponseEntity<List<History>> getByUserName(@RequestParam String userName) {
 		try {
