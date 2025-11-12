@@ -13,4 +13,5 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     
     boolean existsByTitre(String titre);
 
+    Book getBooksById(Long id);
 }

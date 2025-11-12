@@ -14,6 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.NoSuchElementException;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
@@ -135,5 +138,49 @@ public class BookController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+	// === ENDPOINTS SPÉCIFIQUES POUR LES IMAGES ===
+
+	@GetMapping("/{id}/cover-image")
+	public ResponseEntity<?> getBookCoverImage(@PathVariable long id) {
+		try {
+			byte[] imageData = bookServices.getBookCoverImageData(id);
+			String mimeType = bookServices.getCoverImageMimeType(id);
+
+			return ResponseEntity.ok()
+					.contentType(MediaType.parseMediaType(mimeType))
+					.body(imageData);
+
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+		} catch (IOException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Image non trouvée sur le serveur");
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body("Erreur lors de la récupération de l'image");
+		}
+	}
+
+	@GetMapping("/{id}/cover-image-url")
+	public ResponseEntity<?> getBookCoverImageUrl(@PathVariable long id) {
+		try {
+			String imageUrl = bookServices.getBookCoverImageUrl(id);
+			return ResponseEntity.ok(imageUrl);
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body("Livre non trouvé ou sans image");
+		}
+	}
+
+	@GetMapping("/{id}/has-cover-image")
+	public ResponseEntity<Boolean> hasCoverImage(@PathVariable long id) {
+		try {
+			boolean hasImage = bookServices.hasCoverImage(id);
+			return ResponseEntity.ok(hasImage);
+		} catch (Exception e) {
+			return ResponseEntity.ok(false);
+		}
+	}
+
 	
 }

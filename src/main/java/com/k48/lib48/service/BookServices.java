@@ -14,13 +14,15 @@ import com.k48.lib48.repository.BookRepository;
 import com.k48.lib48.repository.CategoryRepository;
 import com.k48.lib48.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -32,17 +34,26 @@ public class BookServices {
 	private final CategoryRepository categoryRepo;
 	private final HistoryService historyService;
 	private final UserRepository userRepository;
+	private  final FileService fileService;
+
+	@Value("${base.url:http://localhost:808}")
+	private String baseUrl;
+
+	@Value("${project.poster:uploads/}")
+	private String path;
 	
-	public BookServices(BookRepository bookRepository, CategoryRepository categoryRepo, HistoryService historyService, UserRepository userRepository) {
+	public BookServices(BookRepository bookRepository, CategoryRepository categoryRepo, HistoryService historyService, UserRepository userRepository, FileService fileService) {
 		this.bookRepository = bookRepository;
 		this.categoryRepo = categoryRepo;
 		this.historyService = historyService;
 		this.userRepository = userRepository;
-	}
-	
+        this.fileService = fileService;
+    }
+
+
 //------------------------------------------------------------------------------------------------------------------------------------------
 	@Transactional
-	public Book createBook(long idCategory, BookRequestDTO bookRequestDTO, MultipartFile coverImage) {
+	public Book createBook(long idCategory, BookRequestDTO bookRequestDTO, MultipartFile coverImage) throws IOException {
 		
 		if (bookRepository.existsByTitre(bookRequestDTO.titre())){
 			User gerant = getGerant();
@@ -70,11 +81,14 @@ public class BookServices {
 		book.setEstDisponible(true);
 		book.setEtatLivre(EtatLivre.NEUF);
 		book.setCategory(category);
-		
+
+		// Gestion de l'image avec FileService
 		if (coverImage != null && !coverImage.isEmpty()) {
-			String coverImageURL = saveFile(coverImage);
-			
-			book.setUrlCoverImage(coverImageURL);
+			// Utiliser FileService pour uploader
+			String uploadedFileName = fileService.uploadFile(path, coverImage);
+			String publicPath = path.endsWith("/") ? path : path + "/";
+			String fullImageUrl = baseUrl + "/" + publicPath + uploadedFileName;
+			book.setUrlCoverImage(fullImageUrl);
 		}
 		
 		User gerant = getGerant();
@@ -108,7 +122,7 @@ public class BookServices {
 		return bookRepository.findAllByCategory(category);
 	}
 	
-	public Book updateBook(long id, EtatLivre livreEtat, long idCategory, BookUpDateDTO bookUpDateDTO, MultipartFile coverImage) {
+	public Book updateBook(long id, EtatLivre livreEtat, long idCategory, BookUpDateDTO bookUpDateDTO, MultipartFile coverImage) throws IOException {
 		Book existingBook = bookRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Book not found"));
 		
 		Category category = categoryRepo.findById(idCategory).orElseThrow(() -> new NoSuchElementException("Category not found "));
@@ -125,6 +139,16 @@ public class BookServices {
 			
 			existingBook.setUrlCoverImage(coverImageURL);
 		}
+
+		String fileName =  existingBook.getUrlCoverImage();
+		if(coverImage !=null) {
+			//Files.deleteIfExists(Paths.get(path + File.separator + fileName));
+			fileService.deleteFile(path,fileName);
+			fileName = fileService.uploadFile(path ,coverImage);
+		}
+		String fullImageUrl = baseUrl + "/" + path + "/" + fileName;
+		existingBook.setUrlCoverImage(fullImageUrl);
+
 		
 		User gerant = getGerant();
 		
@@ -132,6 +156,7 @@ public class BookServices {
 		
 		return bookRepository.save(existingBook);
 	}
+
 	
 	public void deleteBook(long id) {
 		if (!bookRepository.existsById(id)) {
@@ -189,5 +214,65 @@ public class BookServices {
 			       .findFirst()
 			       .orElseThrow(() -> new IllegalStateException("Aucun gérant disponible"));
 	}
-	
+
+
+	// === MÉTHODES SPÉCIFIQUES POUR LES IMAGES ===
+	public byte[] getBookCoverImageData(long bookId) throws IOException {
+		Book book = bookRepository.getBooksById(bookId);
+
+		if (book.getUrlCoverImage() == null || book.getUrlCoverImage().isEmpty()) {
+			throw new IllegalArgumentException("Ce livre n'a pas d'image de couverture");
+		}
+
+		String filename = extractFilenameFromUrl(book.getUrlCoverImage());
+		try (InputStream inputStream = fileService.getResourceFile(path, filename)) {
+			return inputStream.readAllBytes();
+		}
+	}
+
+	public String getBookCoverImageUrl(long bookId) {
+		Book book = bookRepository.getBooksById(bookId);
+		return book.getUrlCoverImage();
+	}
+
+	public boolean hasCoverImage(long bookId) {
+		Book book = bookRepository.getBooksById(bookId);
+		return book.getUrlCoverImage() != null && !book.getUrlCoverImage().isEmpty();
+	}
+
+	public String getCoverImageMimeType(long bookId) {
+		Book book = bookRepository.getBooksById(bookId);
+		if (book.getUrlCoverImage() == null) {
+			return "application/octet-stream";
+		}
+
+		String filename = extractFilenameFromUrl(book.getUrlCoverImage());
+		return determineMimeType(filename);
+	}
+
+
+
+	private String extractFilenameFromUrl(String url) {
+		if (url == null || url.isEmpty()) return null;
+		String[] parts = url.split("/");
+		return parts[parts.length - 1];
+	}
+
+	private String determineMimeType(String filename) {
+		if (filename == null) return "application/octet-stream";
+
+		String lowerFilename = filename.toLowerCase();
+		if (lowerFilename.endsWith(".jpg") || lowerFilename.endsWith(".jpeg")) {
+			return "image/jpeg";
+		} else if (lowerFilename.endsWith(".png")) {
+			return "image/png";
+		} else if (lowerFilename.endsWith(".gif")) {
+			return "image/gif";
+		} else if (lowerFilename.endsWith(".webp")) {
+			return "image/webp";
+		} else {
+			return "application/octet-stream";
+		}
+	}
+
 }

@@ -86,4 +86,6 @@ public class SecurityConfig {
 				                                                 .name("no-auth")))
 			                   .security(Collections.singletonList(new SecurityRequirement().addList("basic-auth")));
 	}
+
+
 }
