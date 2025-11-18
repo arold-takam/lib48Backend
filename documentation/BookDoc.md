@@ -92,3 +92,37 @@ Ce contrôleur gère toutes les opérations liées aux livres de la librairie : 
 | **Contraintes**  | Rôle requis : `GERANT`. L’ID doit exister. **Interdit si le livre est emprunté.** |
 | **Codes Retour** | `204 No Content`, `400 Bad Request` (livre inexistant ou emprunté)                |
 
+
+## 🔹 4. Endpoints spécifiques aux images de couverture
+
+### `GET /books/{id}/cover-image`
+
+| Champ            | Description                                                                                                 |
+|------------------|-------------------------------------------------------------------------------------------------------------|
+| **But**          | Récupérer les images de couverture des livres.                                                              |
+| **Chemin**       | `GET` sur `{{baseURL}}/books/get/{id}/cover-image}`                                                         |
+| **UX Relatif**   | Permet de récupérer les images de couverture d'un livre par son ID pour les afficher au niveau du Frontend. |
+| **Contraintes**  | Rôle requis : `Public`.                                                                                     |
+| **Codes Retour** | `200 OK`, `404 Not Found`                                                                                   |
+
+
+### `GET /books/{id}/cover-image-url`
+
+| Champ            | Description                                                               |
+|------------------|---------------------------------------------------------------------------|
+| **But**          | Récupérer l'URL de l'image de couverture des livres .                     |
+| **Chemin**       | `GET` sur `{{baseURL}}/books/get/{id}/cover-image-url}`                   |
+| **UX Relatif**   | Permet de récupérer l'URL de l'image de couverture d'un livre par son ID. |
+| **Contraintes**  | Rôle requis : `Public`.                                                   |
+| **Codes Retour** | `200 OK`, `404 Not Found`                                                 |
+
+### `GET /books/{id}/has-cover-image`
+
+| Champ            | Description                                                                                               |
+|------------------|-----------------------------------------------------------------------------------------------------------|
+| **But**          | Vérifier si un livre possède une  image de couverture.                                                    |
+| **Chemin**       | `GET` sur `{{baseURL}}/books/get/{id}/has-cover-image}`                                                   |
+| **UX Relatif**   | Permet de vérifier si un livre possède une  image de couverture par son ID pour effectuer les opérations. |
+| **Contraintes**  | Rôle requis : `Public`.                                                                                   |
+| **Codes Retour** | `200 OK`, `404 Not Found`                                                                                 |
+

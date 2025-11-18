@@ -36,7 +36,7 @@ public class BookServices {
 	private final UserRepository userRepository;
 	private  final FileService fileService;
 
-	@Value("${base.url:http://localhost:808}")
+	@Value("${base.url:http://localhost:8080}")
 	private String baseUrl;
 
 	@Value("${project.poster:uploads/}")
