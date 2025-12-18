@@ -34,4 +34,5 @@ build/
 
 ###Fichier et dossiers à ignorer###
 uploads
+src/main/resources/*
 src/main/resources/application.properties
