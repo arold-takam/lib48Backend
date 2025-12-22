@@ -23,7 +23,7 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping(path = "/books")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500"})
 public class BookController {
 	private final BookServices bookServices;
 	private static final Logger log = LoggerFactory.getLogger(BookController.class);
