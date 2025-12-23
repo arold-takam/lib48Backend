@@ -14,8 +14,8 @@ public class CoverFileConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry){
         // Mappe l'URL /api/uploads/** vers le dossier physique
-        registry.addResourceHandler("/api/uploads/**")
-                .addResourceLocations("file:" + UPLOAD_DIR);
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:" + UPLOAD_DIR + "/");
     }
     
     @PostConstruct

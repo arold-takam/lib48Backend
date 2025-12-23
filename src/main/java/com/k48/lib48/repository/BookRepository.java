@@ -7,11 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
-    Book findByTitreIgnoreCase(String title);
-    
-    List<Book> findAllByCategory (Category category);
-    
-    boolean existsByTitre(String titre);
-
-    Book getBooksById(Long id);
+	Book findByTitreIgnoreCase(String title);
+	
+	List<Book> findAllByCategory(Category category);
+	
+	boolean existsByTitre(String titre);
+	
+	Book getBooksById(Long id);
 }
