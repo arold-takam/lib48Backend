@@ -24,8 +24,7 @@ public class FileService implements FileServiceInt {
         }
 
         String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
-
-
+        
         // Créer le répertoire s'il n'existe pas
         Path uploadPath = Paths.get(path);
         if (!Files.exists(uploadPath)) {
@@ -57,6 +56,7 @@ public class FileService implements FileServiceInt {
         return new FileInputStream(file);
 
     }
+    
     @Override
     public boolean fileExists(String path, String filename) {
         String filePath = path + File.separator + filename;

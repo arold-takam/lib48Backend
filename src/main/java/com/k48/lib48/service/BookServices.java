@@ -74,7 +74,6 @@ public class BookServices {
 		Category category = categoryRepo.findById(idCategory).orElseThrow(() -> new IllegalArgumentException("Category not found"));
 		
 		Book book = new Book();
-		
 		book.setTitre(bookRequestDTO.titre());
 		book.setAuteur(bookRequestDTO.auteur());
 		book.setEditeur(bookRequestDTO.editeur());
@@ -86,8 +85,7 @@ public class BookServices {
 		if (coverImage != null && !coverImage.isEmpty()) {
 			// Utiliser FileService pour uploader
 			String uploadedFileName = fileService.uploadFile(path, coverImage);
-			String publicPath = path.endsWith("/") ? path : path + "/";
-			String fullImageUrl = baseUrl + "/" + publicPath + uploadedFileName;
+			String fullImageUrl = buildPublicUrl(uploadedFileName);
 			book.setUrlCoverImage(fullImageUrl);
 		}
 		
@@ -135,28 +133,20 @@ public class BookServices {
 		existingBook.setCategory(category);
 		
 		if (coverImage != null && !coverImage.isEmpty()) {
-			String coverImageURL = saveFile(coverImage);
-			
-			existingBook.setUrlCoverImage(coverImageURL);
+			// Supprimer l’ancienne image si elle existe
+			String oldFilename = extractFilenameFromUrl(existingBook.getUrlCoverImage()); 
+			if (oldFilename != null) { fileService.deleteFile(path, oldFilename); }
+			// Uploader la nouvelle
+			String uploadedFileName = fileService.uploadFile(path, coverImage);
+			String fullImageUrl = buildPublicUrl(uploadedFileName); // ✅ URL publique
+			existingBook.setUrlCoverImage(fullImageUrl);
 		}
-
-		String fileName =  existingBook.getUrlCoverImage();
-		if(coverImage !=null) {
-			//Files.deleteIfExists(Paths.get(path + File.separator + fileName));
-			fileService.deleteFile(path,fileName);
-			fileName = fileService.uploadFile(path ,coverImage);
-		}
-		String fullImageUrl = baseUrl + "/" + path + "/" + fileName;
-		existingBook.setUrlCoverImage(fullImageUrl);
-
 		
 		User gerant = getGerant();
-		
 		logHistory(gerant.getName(), bookUpDateDTO.titre(), TypeOpperation.MODIFIER_LIVRE, EtatOpperation.SUCCES, "Mise a jour du livre reussit.");
 		
 		return bookRepository.save(existingBook);
 	}
-
 	
 	public void deleteBook(long id) {
 		if (!bookRepository.existsById(id)) {
@@ -229,10 +219,18 @@ public class BookServices {
 			return inputStream.readAllBytes();
 		}
 	}
-
+	
 	public String getBookCoverImageUrl(long bookId) {
 		Book book = bookRepository.getBooksById(bookId);
-		return book.getUrlCoverImage();
+		
+		if (book.getUrlCoverImage() == null || book.getUrlCoverImage().isBlank()) {
+			throw new IllegalArgumentException("Ce livre n'a pas d'image de couverture");
+		}
+		
+		// Nettoyer l'URL pour éviter les espaces ou caractères parasites
+		String cleanUrl = book.getUrlCoverImage().replaceAll("\\s+", "");
+		
+		return cleanUrl;
 	}
 
 	public boolean hasCoverImage(long bookId) {
@@ -249,9 +247,13 @@ public class BookServices {
 		String filename = extractFilenameFromUrl(book.getUrlCoverImage());
 		return determineMimeType(filename);
 	}
-
-
-
+	
+	
+	private String buildPublicUrl(String fileName) {
+		// Utilise la baseUrl injectée (http://localhost:8080) + le context-path + le handler
+		return baseUrl + "/api/uploads/" + fileName;
+	}
+	
 	private String extractFilenameFromUrl(String url) {
 		if (url == null || url.isEmpty()) return null;
 		String[] parts = url.split("/");

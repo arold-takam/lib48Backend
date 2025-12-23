@@ -1,10 +1,12 @@
 package com.k48.lib48.service;
 
 import com.k48.lib48.dto.HistoryRequestDTO;
+import com.k48.lib48.models.Book;
 import com.k48.lib48.models.History;
 import com.k48.lib48.models.User;
 import com.k48.lib48.myEnum.EtatOpperation;
 import com.k48.lib48.myEnum.TypeOpperation;
+import com.k48.lib48.repository.BookRepository;
 import com.k48.lib48.repository.HistoryRepository;
 import com.k48.lib48.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -17,11 +19,13 @@ import java.util.List;
 @Service
 public class HistoryService {
 	private final UserRepository userRepository;
+	private final BookRepository bookRepository;
 	private HistoryRepository historyRepository;
 	
-	public HistoryService(HistoryRepository historyRepository, UserRepository userRepository) {
+	public HistoryService(HistoryRepository historyRepository, UserRepository userRepository, BookRepository bookRepository) {
 		this.historyRepository = historyRepository;
 		this.userRepository = userRepository;
+		this.bookRepository = bookRepository;
 	}
 	
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -60,12 +64,20 @@ public class HistoryService {
 	
 	public List<History>findByUserName(String userName){
 		User user = userRepository.findByNameIgnoreCase(userName);
-
 		if (user == null){
 			throw new IllegalArgumentException("No user found at the name: "+userName);
 		}
 
-        return historyRepository.findAllByUserNameIgnoreCase(userName);
+                return historyRepository.findAllByUserNameIgnoreCase(userName);
+	}
+	
+	public List<History>findByBookTitle(String bookTitle){
+		Book book = bookRepository.findByTitreIgnoreCase(bookTitle);
+		if (book == null){
+			throw new IllegalArgumentException("No book found with the title: "+bookTitle);
+		}
+		
+		return historyRepository.findAllByBookTitleIgnoreCase(bookTitle);
 	}
 	
 }

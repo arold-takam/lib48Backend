@@ -1,6 +1,7 @@
 package com.k48.lib48.controllers;
 
 
+import com.k48.lib48.models.Book;
 import com.k48.lib48.models.History;
 import com.k48.lib48.myEnum.EtatOpperation;
 import com.k48.lib48.myEnum.TypeOpperation;
@@ -51,7 +52,7 @@ public class HistoryController {
 		return new ResponseEntity<>(historyService.findByEtatOperation(etatOpperation), HttpStatus.OK);
 	}
 	
-	@GetMapping("/get/user")
+	@GetMapping("/get/byUsername")
 	public ResponseEntity<List<History>> getByUserName(@RequestParam String userName) {
 		try {
                     return new ResponseEntity<>(historyService.findByUserName(userName), HttpStatus.OK);
@@ -61,6 +62,18 @@ public class HistoryController {
                 } catch (Exception e) {
 			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	@GetMapping(path = "/get/byBookTitle")
+	public  ResponseEntity<List<History>>findByBookTitle(@RequestParam String bookTitle){
+		try {
+			List<History> list =  historyService.findByBookTitle(bookTitle);
+			
+			return new ResponseEntity<>(list, HttpStatus.OK);
+		}catch (IllegalArgumentException e){
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
 	
