@@ -113,6 +113,27 @@ public class BorrowBookService {
 		);
 	}
 	
+	public List<BorrowResponseDTO>getAll(){
+		List<BorrowBook>list = borrowBookRepository.findAll();
+		
+		List<BorrowResponseDTO>borrowResponseDTOList = new ArrayList<>();
+		
+		for (BorrowBook borrow : list){
+			borrowResponseDTOList.add(
+				new BorrowResponseDTO(
+					borrow.getId(),
+					borrow.getGerant().getName(),
+					borrow.getAbonne().getName(),
+					borrow.getBook().getTitre(),
+					borrow.getDateEmprunt(),
+					borrow.getDelaiEmprunt()
+				)
+			);
+		}
+		
+		return borrowResponseDTOList;
+	}
+	
 	public List<BorrowResponseDTO>getAllBorrows(int gerantID){
 		
 		User gerant =validateGerant(gerantID);

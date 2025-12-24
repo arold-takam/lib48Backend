@@ -41,6 +41,13 @@ public class HistoryController {
             }
     }
     
+    @GetMapping(path = "/get/All", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<History>>getAll(){
+		List<History>list = historyService.getAll();
+		
+		return new ResponseEntity<>(list, HttpStatus.OK);
+    }
+    
     @GetMapping(path = "/get/all/byTypeOperation", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<History>> getAllHistoryByTypeOperation(@RequestParam TypeOpperation typeOpperation) {
 		return new ResponseEntity<>(historyService.findByTypeOperations(typeOpperation), HttpStatus.OK);

@@ -11,6 +11,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
 @RequestMapping(path = "/borrowBook")
 public class BorrowBookController {
@@ -51,6 +53,13 @@ public class BorrowBookController {
 			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	@GetMapping(path = "/get/all", produces = APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<BorrowResponseDTO>>getAll(){
+		List<BorrowResponseDTO>list = borrowBookService.getAll();
+		
+		return new ResponseEntity<>(list, HttpStatus.OK);
 	}
 	
 	@GetMapping(path = "/get/all/{gerantID}")

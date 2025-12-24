@@ -54,6 +54,10 @@ public class HistoryService {
 		return historyRepository.findById(historyID).get();
 	}
 	
+	public List<History> getAll(){
+		return historyRepository.findAll();
+	}
+	
 	public List<History>findByTypeOperations(TypeOpperation typeOpperation){
 		return historyRepository.findByTypeOpperation(typeOpperation);
 	}
