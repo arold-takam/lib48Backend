@@ -76,10 +76,6 @@ public class HistoryService {
 	}
 	
 	public List<History>findByBookTitle(String bookTitle){
-		Book book = bookRepository.findByTitreIgnoreCase(bookTitle);
-		if (book == null){
-			throw new IllegalArgumentException("No book found with the title: "+bookTitle);
-		}
 		
 		return historyRepository.findAllByBookTitleIgnoreCase(bookTitle);
 	}
