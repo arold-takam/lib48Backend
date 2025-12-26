@@ -114,6 +114,14 @@ public class UserServices {
 		return userRepository.findAllByRoleName(role);
 	}
 	
+	public User findByMailIgnoreCase(String mail){
+		if (mail.isBlank()){
+			throw new IllegalArgumentException("Entrer a right mail.");
+		}
+		
+		return userRepository.findByMailIgnoreCase(mail);
+	}
+	
 	public void updateUser(int userID, Role roleName,  UserRequestDTO userRequestDTO){
 		User user= userRepository.findById(userID).orElseThrow(()-> new IllegalArgumentException("User with the ID: "+userID+" not found"));
 		

@@ -105,6 +105,18 @@ public class UserController {
 		}
 	}
 	
+	@GetMapping(path = "/get/byMail", produces = APPLICATION_JSON_VALUE)
+	public ResponseEntity<User> findByMailIgnoreCase(@RequestParam String mail){
+		try {
+			User user =  userServices.findByMailIgnoreCase(mail);
+			
+			return new ResponseEntity<>(user, HttpStatus.OK);
+		}catch (IllegalArgumentException e){
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+	
 	@GetMapping(path = "/get", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<User>>getAllUsers(){
 		List<User>userList = userServices.getAllUsers();
