@@ -2,6 +2,7 @@ package com.k48.lib48.controllers;
 
 import com.k48.lib48.dto.BorrowRequestDTO;
 import com.k48.lib48.dto.BorrowResponseDTO;
+import com.k48.lib48.myEnum.BorrowStatus;
 import com.k48.lib48.service.BorrowBookService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +84,20 @@ public class BorrowBookController {
 	public ResponseEntity<List<BorrowResponseDTO>>getAllBorrowsByAbonne_Id(@PathVariable int abonneId){
 		try {
 			List<BorrowResponseDTO> borrowResponseDTOList = borrowBookService.getAllBorrowsByAbonne_Id(abonneId);
+			return new ResponseEntity<>(borrowResponseDTOList, HttpStatus.OK);
+		}catch (IllegalArgumentException e){
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}catch (Exception e){
+			log.error(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	@GetMapping(path = "/get/all/byStatus")
+	public ResponseEntity<List<BorrowResponseDTO>>getAllBorrowsByStatus(@RequestParam BorrowStatus status){
+		try {
+			List<BorrowResponseDTO> borrowResponseDTOList = borrowBookService.getAllBorrowsByStatus(status);
 			return new ResponseEntity<>(borrowResponseDTOList, HttpStatus.OK);
 		}catch (IllegalArgumentException e){
 			log.error(e.getMessage());
