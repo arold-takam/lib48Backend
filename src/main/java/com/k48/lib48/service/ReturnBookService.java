@@ -4,10 +4,7 @@ import com.k48.lib48.dto.HistoryRequestDTO;
 import com.k48.lib48.dto.ReturnRequestDTO;
 import com.k48.lib48.dto.ReturnResponseDTO;
 import com.k48.lib48.models.*;
-import com.k48.lib48.myEnum.EtatLivre;
-import com.k48.lib48.myEnum.EtatOpperation;
-import com.k48.lib48.myEnum.Role;
-import com.k48.lib48.myEnum.TypeOpperation;
+import com.k48.lib48.myEnum.*;
 import com.k48.lib48.repository.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -82,6 +79,9 @@ public class ReturnBookService {
 		ReturnBook retour = buildReturnBook(gerant, borrowBook, nouvelEtatLivre, dto.dateRetour());
 		
 		logHistory( abonne.getName(), "Book ID: " + book.getTitre(), TypeOpperation.RETOUR_LIVRE, EtatOpperation.SUCCES, "Livre retourne." );
+		
+		borrowBook.setStatus(BorrowStatus.TERMINE);
+		borrowBookRepository.save(borrowBook);
 		
 		returnBookRepository.save(retour);
 	}
