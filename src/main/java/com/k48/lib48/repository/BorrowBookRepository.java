@@ -2,6 +2,7 @@ package com.k48.lib48.repository;
 
 import com.k48.lib48.models.BorrowBook;
 import com.k48.lib48.models.User;
+import com.k48.lib48.myEnum.BorrowStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +17,8 @@ public interface BorrowBookRepository extends JpaRepository<BorrowBook, Integer>
 	List<BorrowBook>findAllByGerant_Id(int gerantID);
 
 	List<BorrowBook> findAllByAbonne_Id(int abonneId);
+	
+	List<BorrowBook> findAllByStatus(BorrowStatus status);
 	
 	void deleteAllByAbonne(User abonne);
 }
