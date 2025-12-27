@@ -135,18 +135,22 @@ public class UserServices {
 			throw new IllegalArgumentException("You are not authorized to update this user.");
 		}
 		
-		if (existingUser != null && existingUser.getId() != userID ) {
-			logHistory( user.getName(), "Book ID: N/A", TypeOpperation.MODIFICATION_COMPTE, EtatOpperation.ECHEC, "Utilisateur non mis a jour.");
-			
+		if (existingUser != null && existingUser.getId() != userID) {
+			logHistory(user.getName(), "N/A", TypeOpperation.MODIFICATION_COMPTE, EtatOpperation.ECHEC, "Email déjà utilisé");
+			System.out.println("existingUserID: "+existingUser.getId()+" VS userID: "+userID);
 			throw new IllegalArgumentException("Email already in use.");
 		}
 		
 		user.setName(userRequestDTO.name());
 		user.setMail(userRequestDTO.mail());
-		if (!userRequestDTO.password().startsWith("$2a$")){
-			user.setPassword(passwordEncoder.encode(userRequestDTO.password()));
+		if (userRequestDTO.password().isBlank() || userRequestDTO.password() == null){
+			user.setPassword(user.getPassword());
 		}else {
-			user.setPassword(userRequestDTO.password());
+			if (!userRequestDTO.password().startsWith("$2a$")){
+				user.setPassword(passwordEncoder.encode(userRequestDTO.password()));
+			}else {
+				user.setPassword(userRequestDTO.password());
+			}
 		}
 		user.setRoleName(roleName);
 		
