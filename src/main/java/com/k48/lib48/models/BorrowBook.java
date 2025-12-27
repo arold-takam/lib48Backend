@@ -1,6 +1,7 @@
 package com.k48.lib48.models;
 
 
+import com.k48.lib48.myEnum.BorrowStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -31,15 +32,19 @@ public class BorrowBook {
 	@Column(name = "delai_emprunt")
 	private int delaiEmprunt;
 	
+	@Column(name = "status")
+	private BorrowStatus status;
+	
 	public BorrowBook() {
 	}
 	
-	public BorrowBook(User gerant, User abonne, Book book, LocalDate dateEmprunt, int delaiEmprunt) {
+	public BorrowBook(User gerant, User abonne, Book book, LocalDate dateEmprunt, int delaiEmprunt, BorrowStatus status) {
 		this.gerant = gerant;
 		this.abonne = abonne;
 		this.book = book;
 		this.dateEmprunt = dateEmprunt;
 		this.delaiEmprunt = delaiEmprunt;
+		this.status = status;
 	}
 	
 	public int getId() {
@@ -84,5 +89,13 @@ public class BorrowBook {
 	
 	public void setDelaiEmprunt(int delaiEmprunt) {
 		this.delaiEmprunt = delaiEmprunt;
+	}
+	
+	public BorrowStatus getStatus() {
+		return status;
+	}
+	
+	public void setStatus(BorrowStatus status) {
+		this.status = status;
 	}
 }

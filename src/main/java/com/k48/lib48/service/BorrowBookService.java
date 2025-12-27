@@ -5,6 +5,7 @@ import com.k48.lib48.models.Book;
 import com.k48.lib48.models.BorrowBook;
 import com.k48.lib48.models.CarteAbonnement;
 import com.k48.lib48.models.User;
+import com.k48.lib48.myEnum.BorrowStatus;
 import com.k48.lib48.myEnum.EtatOpperation;
 import com.k48.lib48.myEnum.Role;
 import com.k48.lib48.myEnum.TypeOpperation;
@@ -85,6 +86,7 @@ public class BorrowBookService {
 		borrowBook.setBook(bookToBorrow);
 		borrowBook.setDateEmprunt(LocalDate.now());
 		borrowBook.setDelaiEmprunt(borrowRequestDTO.delaiEmprunt());
+		borrowBook.setStatus(BorrowStatus.EN_COURS);
 		
 		logHistory(abonne.getName(), "Book ID: "+borrowRequestDTO.bookID(), TypeOpperation.EMPRUNT_LIVRE, EtatOpperation.SUCCES, "Emprunt reussit." );
 
@@ -109,7 +111,8 @@ public class BorrowBookService {
 			borrowBook.getAbonne().getName(),
 			borrowBook.getBook().getTitre(),
 			borrowBook.getDateEmprunt(),
-			borrowBook.getDelaiEmprunt()
+			borrowBook.getDelaiEmprunt(),
+			borrowBook.getStatus()
 		);
 	}
 	
@@ -126,7 +129,8 @@ public class BorrowBookService {
 					borrow.getAbonne().getName(),
 					borrow.getBook().getTitre(),
 					borrow.getDateEmprunt(),
-					borrow.getDelaiEmprunt()
+					borrow.getDelaiEmprunt(),
+					borrow.getStatus()
 				)
 			);
 		}
@@ -150,7 +154,8 @@ public class BorrowBookService {
 					borrow.getAbonne().getName(),
 					borrow.getBook().getTitre(),
 					borrow.getDateEmprunt(),
-					borrow.getDelaiEmprunt()
+					borrow.getDelaiEmprunt(),
+					borrow.getStatus()
 				)
 			);
 		}
@@ -174,12 +179,37 @@ public class BorrowBookService {
 							borrow.getAbonne().getName(),
 							borrow.getBook().getTitre(),
 							borrow.getDateEmprunt(),
-							borrow.getDelaiEmprunt()
-
+							borrow.getDelaiEmprunt(),
+							borrow.getStatus()
 					)
 			);
 		}
 		return borrowResponseDTOList2;
+	}
+	
+	public List<BorrowResponseDTO>getAllBorrowsByStatus(BorrowStatus status){
+		if (status == null){
+			throw new IllegalArgumentException("Wrong status, try again.");
+		}
+		
+		List<BorrowBook>borrowBookList =  borrowBookRepository.findAllByStatus(status);
+		
+		List<BorrowResponseDTO>borrowResponseDTOList = new ArrayList<>();
+		
+		for (BorrowBook borrow : borrowBookList){
+			borrowResponseDTOList.add(
+				new BorrowResponseDTO(
+					borrow.getId(),
+					borrow.getGerant().getName(),
+					borrow.getAbonne().getName(),
+					borrow.getBook().getTitre(),
+					borrow.getDateEmprunt(),
+					borrow.getDelaiEmprunt(),
+					borrow.getStatus()
+				)
+			);
+		}
+		return borrowResponseDTOList;
 	}
 	
 //	UTILITIES METHODS---------------------------------------------------------------------------------------------------------------------------------

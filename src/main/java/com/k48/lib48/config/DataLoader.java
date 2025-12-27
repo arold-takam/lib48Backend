@@ -24,8 +24,9 @@ public class DataLoader implements CommandLineRunner {
 	
 //	---------------------------------------------------------------------------------------------------------------------------------------------
 	@Override
-	public void run(String... args) throws Exception{
-		if (userRepository.findByMailIgnoreCase(MAIL_ADMIN) == null){
+	public void run(String... args) throws Exception {
+		// Vérifie s'il existe AU MOINS un GERANT en base, peu importe son mail
+		if (userRepository.findAllByRoleName(Role.GERANT).isEmpty()) {
 			User gerant = new User();
 			gerant.setName(NAME_ADMIN);
 			gerant.setMail(MAIL_ADMIN);
@@ -33,7 +34,7 @@ public class DataLoader implements CommandLineRunner {
 			gerant.setRoleName(Role.GERANT);
 			
 			userRepository.save(gerant);
-			System.out.println("✅ Admin loaded successfully ! ✅");
+			System.out.println("✅ Premier Admin chargé ! ✅");
 		}
 	}
 }
