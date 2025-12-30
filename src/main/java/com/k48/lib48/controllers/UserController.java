@@ -26,6 +26,7 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping(path = "/user")
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 public class UserController {
 	private final UserServices userServices;
 	private final CarteAbonnementService carteAbonnementService;
