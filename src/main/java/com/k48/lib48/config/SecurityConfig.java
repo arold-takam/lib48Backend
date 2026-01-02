@@ -100,7 +100,8 @@ public class SecurityConfig {
 		// On met les deux pour être sûr
 		configuration.setAllowedOrigins(Arrays.asList(
 			"http://localhost:5500",
-			"http://127.0.0.1:5500"
+			"http://127.0.0.1:5500",
+			"https://lib48-client.netlify.app"
 		));
 		
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
