@@ -2,7 +2,9 @@ package com.k48.lib48.controllers;
 
 import com.k48.lib48.dto.ReturnRequestDTO;
 import com.k48.lib48.dto.ReturnResponseDTO;
+import com.k48.lib48.models.User;
 import com.k48.lib48.myEnum.EtatLivre;
+import com.k48.lib48.repository.UserRepository;
 import com.k48.lib48.service.ReturnBookService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,9 +20,11 @@ import java.util.List;
 public class ReturnBookController {
 	private final ReturnBookService returnBookService;
 	private static final Logger log = LoggerFactory.getLogger(ReturnBookController.class);
+	private final UserRepository userRepository;
 	
-	public ReturnBookController(ReturnBookService returnBookService) {
+	public ReturnBookController(ReturnBookService returnBookService, UserRepository userRepository) {
 		this.returnBookService = returnBookService;
+		this.userRepository = userRepository;
 	}
 
 //	RETURNING MANAGEMENT-----------------------------------------------------------------------------------------------------------------------------------------------
@@ -28,9 +32,14 @@ public class ReturnBookController {
 	@PostMapping(path = "/create/{idReturnGerantID}")
 	public ResponseEntity<?> makeReturn (@PathVariable int idReturnGerantID, @RequestParam EtatLivre etatLivre, @RequestBody ReturnRequestDTO returnRequestDTO){
 		try {
-			returnBookService.makeReturn(idReturnGerantID, etatLivre, returnRequestDTO);
+			// On ignore totalement SecurityContextHolder ici pour utiliser uniquement la DB
+			User gerantEnBase = userRepository.findById(idReturnGerantID)
+				                    .orElseThrow(() -> new RuntimeException("Gerant non trouve."));
 			
-			return new ResponseEntity<>(HttpStatus.OK);
+			// On passe l'ID (int) au service, pas l'objet principal de sécurité
+			returnBookService.makeReturn(gerantEnBase.getId(), etatLivre, returnRequestDTO);
+			
+			return ResponseEntity.ok().build();
 		}catch (IllegalArgumentException e){
 			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
