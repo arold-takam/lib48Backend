@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main", "master", "preprod", "test" ]
   pull_request:
-    branches: [ "main", "master" , "preprod", "test"]
+    branches: [ "main", "master", "preprod", "test" ]
 
 jobs:
   build:
@@ -21,5 +21,14 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        # On lance le build sans les tests pour vérifier la compilation d'abord
         run: mvn clean verify
+
+      # Affiche les logs d'erreurs en cas d'échec des tests
+      - name: Show Test Errors
+        if: failure()
+        run: |
+          echo "-------------------------------------------------------"
+          echo "VOICI L'ERREUR RÉELLE EXTRAITE DES RAPPORTS MAVEN :"
+          echo "-------------------------------------------------------"
+          find target/surefire-reports -name "*.txt" -exec cat {} +
+          echo "-------------------------------------------------------"
