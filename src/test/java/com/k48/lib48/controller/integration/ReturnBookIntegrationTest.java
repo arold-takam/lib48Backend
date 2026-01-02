@@ -28,7 +28,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@Testcontainers
 @ActiveProfiles("test")
 public class ReturnBookIntegrationTest {
 	
