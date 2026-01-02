@@ -2,6 +2,7 @@ package com.k48.lib48.controllers;
 
 import com.k48.lib48.dto.BorrowRequestDTO;
 import com.k48.lib48.dto.BorrowResponseDTO;
+import com.k48.lib48.models.Book;
 import com.k48.lib48.myEnum.BorrowStatus;
 import com.k48.lib48.service.BorrowBookService;
 import org.slf4j.Logger;
@@ -105,6 +106,19 @@ public class BorrowBookController {
 		}catch (Exception e){
 			log.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	@GetMapping(path = "/get/bookBorrowed/byTitle")
+	public ResponseEntity<Book> getBookBorrowed(@RequestParam String bookTitle){
+		try {
+			Book book = borrowBookService.getBookBorrowed(bookTitle);
+			
+			return new ResponseEntity<>(book, HttpStatus.OK);
+		}catch (IllegalArgumentException e){
+			log.error(e.getMessage());
+			
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
 	
