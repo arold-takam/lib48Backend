@@ -1,14 +1,16 @@
-name: Java CI with Maven
+name: Java CI/CD with Maven and Docker
 
 on:
   push:
-    branches: [ "main", "master", "preprod", "test" ]
-  pull_request:
-    branches: [ "main", "master", "preprod", "test" ]
+    branches: [ "main", "master", "preprod" ]
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
+    # On donne la permission d'écrire dans le registre de paquets GitHub
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - uses: actions/checkout@v4
@@ -23,12 +25,19 @@ jobs:
       - name: Build with Maven
         run: mvn clean verify
 
-      # Affiche les logs d'erreurs en cas d'échec des tests
-      - name: Show Test Errors
-        if: failure()
-        run: |
-          echo "-------------------------------------------------------"
-          echo "VOICI L'ERREUR RÉELLE EXTRAITE DES RAPPORTS MAVEN :"
-          echo "-------------------------------------------------------"
-          find target/surefire-reports -name "*.txt" -exec cat {} +
-          echo "-------------------------------------------------------"
+      # --- DÉBUT DU POINT 2 (CD) ---
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          # L'image sera nommée : ghcr.io/ton-nom/nom-repo:latest
+          tags: ghcr.io/${{ github.repository }}:latest
+      # --- FIN DU POINT 2 ---
