@@ -2,7 +2,7 @@ name: Java CI/CD with Maven and Docker
 
 on:
   push:
-    branches: [ "main", "master", "preprod" ]
+    branches: [ "main", "master", "preprod", "prod", "test" ]
 
 jobs:
   build-and-push:
