@@ -31,7 +31,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # On prépare le nom de l'image en minuscules
+      # On prepare le nom de l'image en minuscules
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -44,6 +44,6 @@ jobs:
         with:
           context: .
           push: true
-          # Utilise le nom nettoyé (en minuscules) par metadata-action
+          # Utilise le nom nettoye(en minuscules) par metadata-action
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
