@@ -110,7 +110,7 @@ public class BookController {
 		@RequestParam EtatLivre livreEtat,
 		@RequestParam long idCategory,
 		@ModelAttribute BookUpDateDTO bookUpDateDTO,
-		@RequestParam MultipartFile coverImage) {
+		@RequestParam(required = false) MultipartFile coverImage) {
 		try {
 			Book book = bookServices.updateBook(id, livreEtat, idCategory, bookUpDateDTO, coverImage);
 			return ResponseEntity.ok(book);

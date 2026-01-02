@@ -212,6 +212,21 @@ public class BorrowBookService {
 		return borrowResponseDTOList;
 	}
 	
+	public Book getBookBorrowed(String bookTitle){
+		if (bookTitle.isBlank()){
+			throw new IllegalArgumentException("This title is invalid, try again.");
+		}
+		
+		List<BorrowBook>list = borrowBookRepository.findAll();
+		for (BorrowBook borrowBook : list){
+			if (borrowBook.getBook().getTitre().equals(bookTitle)){
+				return borrowBook.getBook();
+			}
+		}
+		
+		return null;
+	}
+	
 //	UTILITIES METHODS---------------------------------------------------------------------------------------------------------------------------------
 	private void logHistory(String userName, String bookRef, TypeOpperation type, EtatOpperation etat, String message) {
 		historyService.addToHistory(new HistoryRequestDTO(userName, bookRef, type, etat, message));
