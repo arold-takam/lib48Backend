@@ -118,11 +118,20 @@ public class BookServices {
 		return bookRepository.findAllByCategory(category);
 	}
 	
+	@Transactional
 	public Book updateBook(long id, EtatLivre livreEtat, long idCategory, BookUpDateDTO bookUpDateDTO, MultipartFile coverImage) throws IOException {
-		Book existingBook = bookRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Book not found"));
+		// 1. Validation de base
+		if (bookUpDateDTO == null || bookUpDateDTO.titre() == null || bookUpDateDTO.titre().isBlank()) {
+			throw new IllegalArgumentException("Le titre ne peut pas être vide");
+		}
 		
-		Category category = categoryRepo.findById(idCategory).orElseThrow(() -> new NoSuchElementException("Category not found "));
+		Book existingBook = bookRepository.findById(id)
+			                    .orElseThrow(() -> new NoSuchElementException("Livre non trouvé"));
 		
+		Category category = categoryRepo.findById(idCategory)
+			                    .orElseThrow(() -> new NoSuchElementException("Catégorie non trouvée"));
+		
+		// 2. Mise à jour des champs
 		existingBook.setTitre(bookUpDateDTO.titre());
 		existingBook.setAuteur(bookUpDateDTO.auteur());
 		existingBook.setEditeur(bookUpDateDTO.editeur());
@@ -130,16 +139,16 @@ public class BookServices {
 		existingBook.setEtatLivre(livreEtat);
 		existingBook.setCategory(category);
 		
+		// 3. Image
 		if (coverImage != null && !coverImage.isEmpty()) {
-			// Optionnel : Supprimer l’ancienne image sur Cloudinary (nécessite une logique d'ID public)
-			
-			// Uploader la nouvelle
-			String cloudinaryUrl = fileService.uploadFile(path, coverImage); // ✅ Directement l'URL
+			// Utilise toujours ton service Cloudinary
+			String cloudinaryUrl = fileService.uploadFile(path, coverImage);
 			existingBook.setUrlCoverImage(cloudinaryUrl);
 		}
 		
+		// 4. Log
 		User gerant = getGerant();
-		logHistory(gerant.getName(), bookUpDateDTO.titre(), TypeOpperation.MODIFIER_LIVRE, EtatOpperation.SUCCES, "Mise a jour du livre reussie.");
+		logHistory(gerant.getName(), existingBook.getTitre(), TypeOpperation.MODIFIER_LIVRE, EtatOpperation.SUCCES, "Mise à jour réussie");
 		
 		return bookRepository.save(existingBook);
 	}
