@@ -22,4 +22,4 @@ jobs:
 
       - name: Build with Maven
         # On lance le build sans les tests pour vérifier la compilation d'abord
-        run: mvn clean package -DskipTests
+        run: mvn clean verify
