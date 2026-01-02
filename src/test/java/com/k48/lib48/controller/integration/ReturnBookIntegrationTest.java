@@ -13,33 +13,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import java.time.LocalDate;
 import java.util.UUID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@ActiveProfiles("test")
+@ActiveProfiles("test") // Utilise H2 défini dans application-test.properties
 public class ReturnBookIntegrationTest {
 	
-	@Container // Démarre un vrai Postgres
-	static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
-	
-	@DynamicPropertySource // Lie l'app au Postgres dynamique
-	static void configureProperties(DynamicPropertyRegistry registry) {
-		registry.add("spring.datasource.url", postgres::getJdbcUrl);
-		registry.add("spring.datasource.username", postgres::getUsername);
-		registry.add("spring.datasource.password", postgres::getPassword);
-	}
+	// NOTE : J'ai supprimé @Container et @DynamicPropertySource (plus besoin de Docker/Postgres)
 	
 	@Autowired
 	private MockMvc mockMvc;
@@ -67,18 +54,16 @@ public class ReturnBookIntegrationTest {
 	
 	@BeforeEach
 	void setUp() {
-		// 1. Catégorie
+		// ... (Ton code setUp reste identique)
 		Category cat = new Category();
 		cat.setNom("Informatique");
 		categoryRepository.save(cat);
 		
-		// 2. Carte d'Abonnement (Correction du type Long)
 		CarteAbonnement carte = new CarteAbonnement();
 		carte.setCardNumber(System.currentTimeMillis());
 		carte.setDuree(12);
 		carteAbonnementRepository.save(carte);
 		
-		// 3. Gérant
 		gerant = new User();
 		gerant.setName("AdminTest");
 		gerant.setMail("admin@test.com");
@@ -86,7 +71,6 @@ public class ReturnBookIntegrationTest {
 		gerant.setPassword("password");
 		userRepository.save(gerant);
 		
-		// 4. Abonné
 		User abonne = new User();
 		abonne.setName("Lecteur");
 		abonne.setMail("lecteur@test.com");
@@ -94,7 +78,6 @@ public class ReturnBookIntegrationTest {
 		abonne.setCarteAbonnement(carte);
 		userRepository.save(abonne);
 		
-		// 5. Livre (Fix NOT NULL etat_livre)
 		Book book = new Book();
 		book.setTitre("Livre Test " + UUID.randomUUID());
 		book.setEstDisponible(false);
@@ -102,14 +85,12 @@ public class ReturnBookIntegrationTest {
 		book.setEtatLivre(EtatLivre.BON_ETAT);
 		bookRepository.save(book);
 		
-		// 6. Emprunt (Fix dates)
 		borrow = new BorrowBook();
 		borrow.setBook(book);
 		borrow.setGerant(gerant);
 		borrow.setAbonne(abonne);
 		borrow.setStatus(BorrowStatus.EN_COURS);
 		borrow.setDateEmprunt(LocalDate.now().minusDays(10));
-		// Utilise le bon setter pour la date de retour prévue si présent
 		borrowRepository.save(borrow);
 	}
 	
