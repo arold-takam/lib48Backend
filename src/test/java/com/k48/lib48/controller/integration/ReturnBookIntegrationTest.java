@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
@@ -23,7 +24,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@ActiveProfiles("test") // Utilise H2 défini dans application-test.properties
+@ActiveProfiles("test")
+@TestPropertySource(properties = {
+	"spring.datasource.driver-class-name=org.h2.Driver",
+	"spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
+	"spring.datasource.username=sa",
+	"spring.datasource.password=",
+	"spring.jpa.database-platform=org.hibernate.dialect.H2Dialect"
+}) // Utilise H2 défini dans application-test.properties
 public class ReturnBookIntegrationTest {
 	
 	// NOTE : J'ai supprimé @Container et @DynamicPropertySource (plus besoin de Docker/Postgres)
