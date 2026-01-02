@@ -3,7 +3,7 @@ FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY . .
 # On saute les tests pour accélérer le build de l'image (ils sont faits avant en CI)
-RUN mvn clean package package
+RUN mvn clean package -DskipTests
 
 # Stage 2: Runtime (Exécution)
 FROM eclipse-temurin:21-jre-jammy
