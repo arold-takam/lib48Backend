@@ -6,6 +6,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,6 +34,9 @@ public class SecurityConfig {
 	
 	private final UserDetailsService userDetailsService;
 	
+	@Value("${ALLOWED_ORIGINS:http://localhost:5500}")
+	private String allowedOrigins;
+	
 	public SecurityConfig(@Qualifier("customUserDetailsService") UserDetailsService userDetailsService) {
 		this.userDetailsService = userDetailsService;
 	}
@@ -44,18 +48,15 @@ public class SecurityConfig {
 		return http
 			       .csrf(AbstractHttpConfigurer::disable)
 			       .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔑 ajout ici
-			       .authorizeHttpRequests(auth ->
-				                              auth.requestMatchers(
-						                              "/api/**",
-						                              "/user/login",
-						                              "/user/register",
-						                              "/swagger-ui/**",
-						                              "/swagger-ui.html",
-						                              "/v3/api-docs/**",
-						                              "/webjars/**",
-						                              "/swagger-resources/**"
-					                              ).permitAll()
-					                              .anyRequest().authenticated()
+			       .authorizeHttpRequests(auth -> auth
+				                                      .requestMatchers(
+					                                      "/user/login",
+					                                      "/user/register",
+														  "user/get/byMail",
+					                                      "/swagger-ui/**",
+					                                      "/v3/api-docs/**"
+				                                      ).permitAll()
+				                                      .anyRequest().authenticated()
 			       )
 			       .httpBasic(httpBasic -> {})
 			       .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -95,15 +96,20 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(Arrays.asList("http://127.0.0.1:5500", "http://localhost:5500"));
+		
+		// On met les deux pour être sûr
+		configuration.setAllowedOrigins(Arrays.asList(
+			"http://localhost:5500",
+			"http://127.0.0.1:5500"
+		));
+		
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+		configuration.setAllowedHeaders(Arrays.asList("*")); // Autorise tous les headers
 		configuration.setAllowCredentials(true);
 		
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
 	}
-	
 	
 }

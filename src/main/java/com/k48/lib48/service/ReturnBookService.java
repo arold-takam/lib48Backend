@@ -49,13 +49,13 @@ public class ReturnBookService {
 		
 		User gerant = getGerant(idGerant);
 		
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		User aunthenticatedUser = (User) authentication.getPrincipal();
-		if (aunthenticatedUser.getId() != gerant.getId()) {
-			logHistory( abonne.getName(), "Book ID: " + book.getId(), TypeOpperation.RETOUR_LIVRE, EtatOpperation.ECHEC, "Livre non retourne." );
-			
-			throw new IllegalArgumentException("You are not authorized to return this book.");
-		}
+//		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//		User aunthenticatedUser = (User) authentication.getPrincipal();
+//		if (aunthenticatedUser.getId() != gerant.getId()) {
+//			logHistory( abonne.getName(), "Book ID: " + book.getId(), TypeOpperation.RETOUR_LIVRE, EtatOpperation.ECHEC, "Livre non retourne." );
+//
+//			throw new IllegalArgumentException("You are not authorized to return this book.");
+//		}
 		
 		EtatLivre ancienEtat = book.getEtatLivre();
 		if (ancienEtat.equals(EtatLivre.MAUVAIS_ETAT) && !nouvelEtatLivre.equals(EtatLivre.MAUVAIS_ETAT)) {

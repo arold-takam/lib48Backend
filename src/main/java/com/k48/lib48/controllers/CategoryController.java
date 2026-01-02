@@ -48,7 +48,6 @@ public class CategoryController {
         return categoryServ.getAllCategories();
     }
 
-    @PreAuthorize("hasRole('GERANT')")
     @GetMapping(path = "/get/byID/{id}", produces= APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> getCategoryId(@PathVariable long id) {
         try {
@@ -63,7 +62,6 @@ public class CategoryController {
         }
     }
 
-    @PreAuthorize("hasRole('GERANT')")
     @GetMapping(path = "/get/byName", produces= APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> getCategoryByName(@RequestParam String name) {
         try {

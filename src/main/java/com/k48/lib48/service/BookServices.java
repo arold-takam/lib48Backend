@@ -17,7 +17,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -34,7 +33,7 @@ public class BookServices {
 	private final CategoryRepository categoryRepo;
 	private final HistoryService historyService;
 	private final UserRepository userRepository;
-	private  final FileService fileService;
+	private  final FileServiceInt fileService;
 
 	@Value("${base.url:http://localhost:8080}")
 	private String baseUrl;
@@ -42,7 +41,7 @@ public class BookServices {
 	@Value("${project.poster:uploads/}")
 	private String path;
 	
-	public BookServices(BookRepository bookRepository, CategoryRepository categoryRepo, HistoryService historyService, UserRepository userRepository, FileService fileService) {
+	public BookServices(BookRepository bookRepository, CategoryRepository categoryRepo, HistoryService historyService, UserRepository userRepository, FileServiceInt fileService) {
 		this.bookRepository = bookRepository;
 		this.categoryRepo = categoryRepo;
 		this.historyService = historyService;
@@ -81,12 +80,11 @@ public class BookServices {
 		book.setEtatLivre(EtatLivre.NEUF);
 		book.setCategory(category);
 
-		// Gestion de l'image avec FileService
+		// Gestion de l'image avec FileServiceInt
 		if (coverImage != null && !coverImage.isEmpty()) {
-			// Utiliser FileService pour uploader
-			String uploadedFileName = fileService.uploadFile(path, coverImage);
-			String fullImageUrl = buildPublicUrl(uploadedFileName);
-			book.setUrlCoverImage(fullImageUrl);
+			// Cloudinary renvoie déjà l'URL complète !
+			String cloudinaryUrl = fileService.uploadFile(path, coverImage);
+			book.setUrlCoverImage(cloudinaryUrl);
 		}
 		
 		User gerant = getGerant();
@@ -133,17 +131,15 @@ public class BookServices {
 		existingBook.setCategory(category);
 		
 		if (coverImage != null && !coverImage.isEmpty()) {
-			// Supprimer l’ancienne image si elle existe
-			String oldFilename = extractFilenameFromUrl(existingBook.getUrlCoverImage()); 
-			if (oldFilename != null) { fileService.deleteFile(path, oldFilename); }
+			// Optionnel : Supprimer l’ancienne image sur Cloudinary (nécessite une logique d'ID public)
+			
 			// Uploader la nouvelle
-			String uploadedFileName = fileService.uploadFile(path, coverImage);
-			String fullImageUrl = buildPublicUrl(uploadedFileName); // ✅ URL publique
-			existingBook.setUrlCoverImage(fullImageUrl);
+			String cloudinaryUrl = fileService.uploadFile(path, coverImage); // ✅ Directement l'URL
+			existingBook.setUrlCoverImage(cloudinaryUrl);
 		}
 		
 		User gerant = getGerant();
-		logHistory(gerant.getName(), bookUpDateDTO.titre(), TypeOpperation.MODIFIER_LIVRE, EtatOpperation.SUCCES, "Mise a jour du livre reussit.");
+		logHistory(gerant.getName(), bookUpDateDTO.titre(), TypeOpperation.MODIFIER_LIVRE, EtatOpperation.SUCCES, "Mise a jour du livre reussie.");
 		
 		return bookRepository.save(existingBook);
 	}
@@ -208,15 +204,27 @@ public class BookServices {
 
 	// === MÉTHODES SPÉCIFIQUES POUR LES IMAGES ===
 	public byte[] getBookCoverImageData(long bookId) throws IOException {
-		Book book = bookRepository.getBooksById(bookId);
-
-		if (book.getUrlCoverImage() == null || book.getUrlCoverImage().isEmpty()) {
-			throw new IllegalArgumentException("Ce livre n'a pas d'image de couverture");
+		Book book = bookRepository.findById(bookId)
+			            .orElseThrow(() -> new NoSuchElementException("Livre non trouvé"));
+		
+		String imagePathOrUrl = book.getUrlCoverImage();
+		if (imagePathOrUrl == null || imagePathOrUrl.isEmpty()) {
+			throw new IllegalArgumentException("Ce livre n'a pas d'image");
 		}
-
-		String filename = extractFilenameFromUrl(book.getUrlCoverImage());
-		try (InputStream inputStream = fileService.getResourceFile(path, filename)) {
-			return inputStream.readAllBytes();
+		
+		// CAS 1 : C'est une URL Cloudinary (commence par http)
+		if (imagePathOrUrl.startsWith("http")) {
+			try (InputStream in = new java.net.URL(imagePathOrUrl).openStream()) {
+				return in.readAllBytes();
+			}
+		}
+		
+		// CAS 2 : C'est un fichier local (nom de fichier simple)
+		else {
+			String filename = extractFilenameFromUrl(imagePathOrUrl);
+			try (InputStream inputStream = fileService.getResourceFile(path, filename)) {
+				return inputStream.readAllBytes();
+			}
 		}
 	}
 	
