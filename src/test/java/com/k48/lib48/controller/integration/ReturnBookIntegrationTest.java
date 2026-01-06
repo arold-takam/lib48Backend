@@ -1,10 +1,8 @@
 package com.k48.lib48.controller.integration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.k48.lib48.dto.ReturnRequestDTO;
-import com.k48.lib48.models.*;
-import com.k48.lib48.myEnum.*;
-import com.k48.lib48.repository.*;
+import java.time.LocalDate;
+import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +13,25 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDate;
-import java.util.UUID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.k48.lib48.dto.ReturnRequestDTO;
+import com.k48.lib48.models.Book;
+import com.k48.lib48.models.BorrowBook;
+import com.k48.lib48.models.CarteAbonnement;
+import com.k48.lib48.models.Category;
+import com.k48.lib48.models.User;
+import com.k48.lib48.myEnum.BorrowStatus;
+import com.k48.lib48.myEnum.EtatLivre;
+import com.k48.lib48.myEnum.Role;
+import com.k48.lib48.repository.BookRepository;
+import com.k48.lib48.repository.BorrowBookRepository;
+import com.k48.lib48.repository.CarteAbonnementRepository;
+import com.k48.lib48.repository.CategoryRepository;
+import com.k48.lib48.repository.UserRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -117,3 +129,5 @@ public class ReturnBookIntegrationTest {
 			.andExpect(status().isOk());
 	}
 }
+
+// Small comment for testing impression.
